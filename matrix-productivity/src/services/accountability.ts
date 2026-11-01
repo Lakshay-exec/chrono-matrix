@@ -69,6 +69,12 @@ export function formatDate(d: Date): string {
  * - If today gets completed, this returns false immediately.
  */
 export function isDay2WarningActive(task: Task, todayDate: Date = new Date()): boolean {
+  // Brand new tasks with zero history should never show warnings on Day 1
+  const completedKeys = Object.keys(task.history || {}).filter((k) => task.history[k] === 'done');
+  if (completedKeys.length === 0) {
+    return false;
+  }
+
   const startDate = getTaskEffectiveStartDate(task);
   const todayStr = formatDate(todayDate);
 
