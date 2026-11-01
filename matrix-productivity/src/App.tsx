@@ -25,10 +25,10 @@ import { MonthlyScheduler } from './components/MonthlyScheduler';
 import { ProductivityCurve } from './components/ProductivityCurve';
 import { SleepTracker } from './components/SleepTracker';
 import { PunishmentsWidget } from './components/PunishmentsWidget';
-import { PunishmentModal } from './components/PunishmentModal';
 import { AddTaskModal } from './components/AddTaskModal';
 import { DownloadPage } from './components/DownloadPage';
 import { HorizontalSlide } from './components/HorizontalSlide';
+import { scanAndAutoAssignPunishments } from './services/accountability';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -76,9 +76,15 @@ export default function App() {
 
   // Modals
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
-  const [punishmentModal, setPunishmentModal] = useState<{
-    isOpen: boolean; initialTask: Task | null; initialMissedDates: string[];
-  }>({ isOpen: false, initialTask: null, initialMissedDates: [] });
+
+  // Automatically scan and assign disciplinary sanctions for 2-day breaches (never for days before joining)
+  useEffect(() => {
+    const updated = scanAndAutoAssignPunishments(tasks, punishments);
+    if (updated.length !== punishments.length) {
+      setPunishments(updated);
+      persist(tasks, sleepRecords, updated, journal);
+    }
+  }, [tasks]);
 
   useEffect(() => {
     saveLocalTheme(theme);
@@ -274,16 +280,6 @@ export default function App() {
     persist(tasks, sleepRecords, punishments, updated);
   };
 
-  const handleTriggerPunishment = (task: Task, dates: string[]) => {
-    setPunishmentModal({ isOpen: true, initialTask: task, initialMissedDates: dates });
-  };
-
-  const handleAssignPunishment = (rec: PunishmentRecord) => {
-    const updated = [rec, ...punishments];
-    setPunishments(updated);
-    persist(tasks, sleepRecords, updated);
-  };
-
   const handleMarkServed = (id: string) => {
     const updated = punishments.map((p) =>
       p.id === id ? { ...p, served: true, servedAt: new Date().toISOString() } : p
@@ -444,10 +440,11 @@ export default function App() {
           <MonthlyScheduler
             tasks={tasks}
             journal={journal}
+            punishments={punishments}
             onToggleCell={handleToggleCell}
             onAddTaskClick={() => setIsAddTaskOpen(true)}
             onDeleteTask={handleDeleteTask}
-            onTriggerPunishment={handleTriggerPunishment}
+            onNavigateToTribunal={() => handleScrollToSection('section-accountability')}
             potatoMode={potatoMode}
           />
         </HorizontalSlide>
@@ -488,9 +485,6 @@ export default function App() {
           <PunishmentsWidget
             punishments={punishments}
             onMarkServed={handleMarkServed}
-            onOpenTriggerModal={() =>
-              setPunishmentModal({ isOpen: true, initialTask: null, initialMissedDates: [] })
-            }
           />
         </HorizontalSlide>
       </main>
@@ -584,16 +578,6 @@ export default function App() {
         <AddTaskModal
           onClose={() => setIsAddTaskOpen(false)}
           onAddTask={handleAddTask}
-        />
-      )}
-
-      {punishmentModal.isOpen && (
-        <PunishmentModal
-          tasks={tasks}
-          initialTask={punishmentModal.initialTask}
-          initialMissedDates={punishmentModal.initialMissedDates}
-          onClose={() => setPunishmentModal({ isOpen: false, initialTask: null, initialMissedDates: [] })}
-          onAssignPunishment={handleAssignPunishment}
         />
       )}
     </div>
