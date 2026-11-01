@@ -27,19 +27,12 @@ export const HorizontalSlide: React.FC<HorizontalSlideProps> = ({
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`shrink-0 w-[94vw] md:w-[90vw] lg:w-[88vw] max-w-7xl snap-center transition-all ${
+      className={`shrink-0 w-full md:w-[90vw] lg:w-[88vw] max-w-7xl snap-center transition-all ${
         !isActive ? 'cursor-pointer' : ''
       } ${className}`}
       style={{
-        // Focused active tab vs softened inactive tabs (clears instantly on hover or active)
-        filter: potatoMode
-          ? 'none'
-          : isActive
-          ? 'none'
-          : isHovered
-          ? 'none'
-          : 'blur(3px)',
-        opacity: isActive ? 1 : isHovered ? 0.9 : 0.45,
+        // On desktop, unfocused slides have subtle soft focus; on mobile or potato mode, keep sharp
+        opacity: isActive ? 1 : isHovered ? 0.9 : 0.6,
         transform: potatoMode
           ? 'none'
           : isActive
@@ -49,13 +42,10 @@ export const HorizontalSlide: React.FC<HorizontalSlideProps> = ({
           : isHovered
           ? 'translateY(-1px) scale(0.995)'
           : 'scale(0.99)',
-        transition:
-          'filter 0.22s ease-out, opacity 0.22s ease-out, transform 0.22s ease-out',
+        transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
-      <div className="w-full">
-        {children}
-      </div>
+      {children}
     </div>
   );
 };
