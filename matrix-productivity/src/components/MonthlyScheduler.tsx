@@ -1,15 +1,30 @@
 import { useState, useRef, useEffect } from 'react';
-import type { Task, DailyJournalEntry } from '../types';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Check, Flame, AlertTriangle, Calendar, Layers } from 'lucide-react';
+import type { Task, DailyJournalEntry, PunishmentRecord } from '../types';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Plus, 
+  Trash2, 
+  Check, 
+  Flame, 
+  AlertTriangle, 
+  Calendar, 
+  Layers, 
+  Lock,
+  ShieldAlert,
+  X
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { isDay2WarningActive, isTaskLocked } from '../services/accountability';
 
 interface MonthlySchedulerProps {
   tasks: Task[];
   journal?: Record<string, DailyJournalEntry>;
+  punishments?: PunishmentRecord[];
   onToggleCell: (taskId: string, dayKey: string) => void;
   onAddTaskClick: () => void;
   onDeleteTask: (taskId: string) => void;
-  onTriggerPunishment: (task: Task, missedDates: string[]) => void;
+  onNavigateToTribunal?: () => void;
   potatoMode: boolean;
 }
 
@@ -18,7 +33,14 @@ const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct
 const WDAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 
 export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
-  tasks, journal, onToggleCell, onAddTaskClick, onDeleteTask, onTriggerPunishment, potatoMode,
+  tasks,
+  journal,
+  punishments = [],
+  onToggleCell,
+  onAddTaskClick,
+  onDeleteTask,
+  onNavigateToTribunal,
+  potatoMode,
 }) => {
   // Mobile / Desktop View Mode: 'week' (compact 7-day) or 'month' (full 30-day matrix)
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
@@ -32,6 +54,13 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
   const isThisMonth = now.getFullYear() === year && now.getMonth() === month;
   const todayNum = now.getDate();
 
+  // Locked Task Modal State
+  const [lockedModal, setLockedModal] = useState<{
+    isOpen: boolean;
+    task: Task | null;
+    penalty: PunishmentRecord | null;
+  }>({ isOpen: false, task: null, penalty: null });
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to today in Month View on mount or when switching
@@ -39,7 +68,7 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
     const colWidth = 36;
-    const stickyWidth = window.innerWidth < 640 ? 112 : 220;
+    const stickyWidth = window.innerWidth < 640 ? 135 : 220;
     const targetScroll = Math.max(
       0,
       (todayNum - 1) * colWidth - (container.clientWidth - stickyWidth) / 2 + colWidth
@@ -54,9 +83,21 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
     }
   }, [viewMode, month, year]);
 
-  // Handle cell click
-  const handleClick = (taskId: string, dayKey: string, isTodayCell: boolean) => {
-    onToggleCell(taskId, dayKey);
+  // Handle cell click with lock protection
+  const handleClick = (task: Task, dayKey: string, isTodayCell: boolean) => {
+    // Check if task is locked by an unresolved punishment
+    const pendingPenalty = isTaskLocked(task.id, punishments);
+    if (pendingPenalty) {
+      setLockedModal({
+        isOpen: true,
+        task,
+        penalty: pendingPenalty,
+      });
+      return;
+    }
+
+    onToggleCell(task.id, dayKey);
+
     if (isTodayCell && !potatoMode) {
       setTimeout(() => {
         try {
@@ -84,20 +125,10 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
     return s;
   };
 
-  // 2-Day breach warning
-  const breach = (task: Task): string[]|null => {
-    const y1 = new Date(); y1.setDate(y1.getDate()-1);
-    const y2 = new Date(); y2.setDate(y2.getDate()-2);
-    const fmt = (dt: Date) => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
-    const k1 = fmt(y2), k2 = fmt(y1);
-    return (!task.history?.[k1] || task.history[k1] !== 'done') && (!task.history?.[k2] || task.history[k2] !== 'done') ? [k1, k2] : null;
-  };
-
   // Calculate 7-day window for Week View
   const weekDays = (() => {
     const base = new Date();
-    // Start of week: Monday (or adjust with weekOffset)
-    const dayOfWeek = base.getDay(); // 0 is Sunday, 1 is Monday...
+    const dayOfWeek = base.getDay();
     const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     const monday = new Date(base);
     monday.setDate(base.getDate() + diffToMonday + weekOffset * 7);
@@ -257,7 +288,7 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-current/[0.07] bg-current/[0.015]">
-                  <th className="sticky left-0 z-20 bg-[var(--bg-app)] px-3 py-2.5 text-left text-[11px] font-mono uppercase tracking-wider opacity-60 w-32 sm:w-56 border-r border-current/[0.07]">
+                  <th className="sticky left-0 z-20 bg-[var(--bg-app)] px-3 py-2.5 text-left text-[11px] font-mono uppercase tracking-wider opacity-60 w-40 sm:w-60 min-w-[145px] sm:min-w-[210px] border-r border-current/[0.07]">
                     Ritual
                   </th>
                   {weekDays.map((wd) => {
@@ -304,21 +335,39 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
                 ) : (
                   tasks.map((task) => {
                     const s = streak(task);
-                    const bd = breach(task);
+                    const isDay2Risk = isDay2WarningActive(task, now);
+                    const locked = isTaskLocked(task.id, punishments);
+
                     return (
                       <tr key={task.id} className="group hover:bg-current/[0.015] transition-colors">
                         {/* Sticky Left Column: Ritual Title & Badges */}
-                        <td className="sticky left-0 z-10 bg-[var(--bg-app)] px-3 py-2 border-r border-current/[0.07] max-w-[130px] sm:max-w-none">
+                        <td className="sticky left-0 z-10 bg-[var(--bg-app)] px-3 py-2 border-r border-current/[0.07] w-40 sm:w-60 min-w-[145px] sm:min-w-[210px]">
                           <div className="flex items-center justify-between gap-1.5">
-                            <div className="flex items-center gap-2 truncate">
+                            <div className="flex items-start gap-2 min-w-0">
                               <div
-                                className="w-2 h-2 rounded-full shrink-0"
+                                className="w-2 h-2 rounded-full shrink-0 mt-1"
                                 style={{ backgroundColor: task.colorTag || '#71717a' }}
                               />
-                              <div className="truncate">
-                                <span className="text-xs sm:text-sm font-semibold text-current truncate block">
-                                  {task.name}
-                                </span>
+                              <div className="min-w-0">
+                                {/* Fully visible, cleanly wrapped title */}
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span 
+                                    className="text-[11px] sm:text-xs font-semibold text-current leading-snug line-clamp-2 break-words"
+                                    title={task.name}
+                                  >
+                                    {task.name}
+                                  </span>
+                                  {locked && (
+                                    <span 
+                                      className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded bg-rose-500/15 text-[9px] font-mono text-rose-400 font-bold shrink-0"
+                                      title="Ritual Locked by Tribunal Penalty"
+                                    >
+                                      <Lock className="w-2.5 h-2.5" />
+                                      Locked
+                                    </span>
+                                  )}
+                                </div>
+                                
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                   <span className="text-[9px] sm:text-[10px] opacity-40 font-mono truncate">
                                     {task.category}
@@ -332,20 +381,24 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-0.5 opacity-40 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                              {bd && (
+
+                            {/* Warning and Delete actions */}
+                            <div className="flex items-center gap-0.5 shrink-0">
+                              {/* Day 2 Alert Warning: Appears only on Day 2 of missing, vanishes as soon as user ticks today! */}
+                              {isDay2Risk && !locked && (
                                 <button
-                                  onClick={() => onTriggerPunishment(task, bd)}
-                                  title="2-day breach warning"
-                                  className="p-1 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
+                                  type="button"
+                                  title="Day 2 Risk: Complete today's target to avoid 2-day Tribunal punishment!"
+                                  className="p-1 rounded-lg text-rose-500 animate-pulse transition-all cursor-help"
                                 >
-                                  <AlertTriangle className="w-3 h-3" />
+                                  <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
                                 </button>
                               )}
+
                               <button
                                 onClick={() => onDeleteTask(task.id)}
                                 title="Delete ritual"
-                                className="p-1 rounded-lg hover:text-rose-400 transition-all cursor-pointer"
+                                className="p-1 rounded-lg opacity-40 hover:opacity-100 hover:text-rose-400 transition-all cursor-pointer"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
@@ -364,15 +417,25 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
                               }`}
                             >
                               <button
-                                onClick={() => handleClick(task.id, wd.dayKey, wd.isToday)}
+                                onClick={() => handleClick(task, wd.dayKey, wd.isToday)}
                                 className={`w-7 h-7 sm:w-8 sm:h-8 mx-auto rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-                                  done ? 'cell-checked' : 'cell-unchecked'
+                                  locked
+                                    ? 'opacity-40 cursor-not-allowed bg-rose-500/10 border border-rose-500/30'
+                                    : done
+                                    ? 'cell-checked'
+                                    : 'cell-unchecked'
                                 }`}
-                                title={`${task.name} (${wd.dayKey}): ${done ? 'Complete' : 'Click to complete'}`}
+                                title={
+                                  locked
+                                    ? 'Ritual is Locked: Complete punishment in Accountability Tribunal to unlock.'
+                                    : `${task.name} (${wd.dayKey}): ${done ? 'Complete' : 'Click to complete'}`
+                                }
                               >
-                                {done && (
+                                {locked ? (
+                                  <Lock className="w-3 h-3 text-rose-400" />
+                                ) : done ? (
                                   <Check className="w-3.5 h-3.5" style={{ strokeWidth: 3 }} />
-                                )}
+                                ) : null}
                               </button>
                             </td>
                           );
@@ -392,7 +455,7 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
             <table className="w-full border-collapse min-w-[780px] sm:min-w-[950px]">
               <thead>
                 <tr className="border-b border-current/[0.07] bg-current/[0.015]">
-                  <th className="sticky left-0 z-20 bg-[var(--bg-app)] px-3 py-2.5 text-left text-[11px] font-mono uppercase tracking-wider opacity-60 w-28 sm:w-56 border-r border-current/[0.07]">
+                  <th className="sticky left-0 z-20 bg-[var(--bg-app)] px-3 py-2.5 text-left text-[11px] font-mono uppercase tracking-wider opacity-60 w-36 sm:w-60 min-w-[130px] sm:min-w-[210px] border-r border-current/[0.07]">
                     Ritual
                   </th>
                   {Array.from({ length: daysInMonth }, (_, i) => {
@@ -443,20 +506,36 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
                 ) : (
                   tasks.map((task) => {
                     const s = streak(task);
-                    const bd = breach(task);
+                    const isDay2Risk = isDay2WarningActive(task, now);
+                    const locked = isTaskLocked(task.id, punishments);
+
                     return (
                       <tr key={task.id} className="group hover:bg-current/[0.015] transition-colors">
-                        <td className="sticky left-0 z-10 bg-[var(--bg-app)] px-3 py-2 border-r border-current/[0.07] max-w-[112px] sm:max-w-none">
+                        <td className="sticky left-0 z-10 bg-[var(--bg-app)] px-3 py-2 border-r border-current/[0.07] w-36 sm:w-60 min-w-[130px] sm:min-w-[210px]">
                           <div className="flex items-center justify-between gap-1.5">
-                            <div className="flex items-center gap-2 truncate">
+                            <div className="flex items-start gap-2 min-w-0">
                               <div
-                                className="w-2 h-2 rounded-full shrink-0"
+                                className="w-2 h-2 rounded-full shrink-0 mt-1"
                                 style={{ backgroundColor: task.colorTag || '#71717a' }}
                               />
-                              <div className="truncate">
-                                <span className="text-xs sm:text-sm font-semibold text-current truncate block">
-                                  {task.name}
-                                </span>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span 
+                                    className="text-[11px] sm:text-xs font-semibold text-current leading-snug line-clamp-2 break-words"
+                                    title={task.name}
+                                  >
+                                    {task.name}
+                                  </span>
+                                  {locked && (
+                                    <span 
+                                      className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded bg-rose-500/15 text-[9px] font-mono text-rose-400 font-bold shrink-0"
+                                      title="Ritual Locked by Tribunal Penalty"
+                                    >
+                                      <Lock className="w-2.5 h-2.5" />
+                                      Locked
+                                    </span>
+                                  )}
+                                </div>
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                   <span className="text-[9px] sm:text-[10px] opacity-40 font-mono truncate">
                                     {task.category}
@@ -470,20 +549,22 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-0.5 opacity-40 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                              {bd && (
+
+                            <div className="flex items-center gap-0.5 shrink-0">
+                              {isDay2Risk && !locked && (
                                 <button
-                                  onClick={() => onTriggerPunishment(task, bd)}
-                                  title="2-day breach warning"
-                                  className="p-1 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
+                                  type="button"
+                                  title="Day 2 Risk: Complete today's target to avoid 2-day Tribunal punishment!"
+                                  className="p-1 rounded-lg text-rose-500 animate-pulse transition-all cursor-help"
                                 >
-                                  <AlertTriangle className="w-3 h-3" />
+                                  <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
                                 </button>
                               )}
+
                               <button
                                 onClick={() => onDeleteTask(task.id)}
                                 title="Delete ritual"
-                                className="p-1 rounded-lg hover:text-rose-400 transition-all cursor-pointer"
+                                className="p-1 rounded-lg opacity-40 hover:opacity-100 hover:text-rose-400 transition-all cursor-pointer"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
@@ -496,6 +577,7 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
                           const dk = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                           const done = task.history?.[dk] === 'done';
                           const today = isThisMonth && d === todayNum;
+
                           return (
                             <td
                               key={dk}
@@ -504,15 +586,25 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
                               }`}
                             >
                               <button
-                                onClick={() => handleClick(task.id, dk, today)}
+                                onClick={() => handleClick(task, dk, today)}
                                 className={`w-6 h-6 sm:w-7 sm:h-7 mx-auto rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-                                  done ? 'cell-checked' : 'cell-unchecked'
+                                  locked
+                                    ? 'opacity-40 cursor-not-allowed bg-rose-500/10 border border-rose-500/30'
+                                    : done
+                                    ? 'cell-checked'
+                                    : 'cell-unchecked'
                                 }`}
-                                title={`${task.name} (${dk}): ${done ? 'Complete' : 'Click to complete'}`}
+                                title={
+                                  locked
+                                    ? 'Ritual is Locked: Complete punishment in Accountability Tribunal to unlock.'
+                                    : `${task.name} (${dk}): ${done ? 'Complete' : 'Click to complete'}`
+                                }
                               >
-                                {done && (
+                                {locked ? (
+                                  <Lock className="w-3 h-3 text-rose-400" />
+                                ) : done ? (
                                   <Check className="w-3.5 h-3.5" style={{ strokeWidth: 3 }} />
-                                )}
+                                ) : null}
                               </button>
                             </td>
                           );
@@ -527,6 +619,64 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
         )}
 
       </div>
+
+      {/* RITUAL LOCKED POPUP MODAL */}
+      {lockedModal.isOpen && lockedModal.task && lockedModal.penalty && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-md page-enter">
+          <div 
+            className="w-full max-w-md glass-card rounded-3xl p-6 sm:p-7 space-y-4 bg-[var(--bg-app)] text-[var(--text-main)] border border-rose-500/30 shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setLockedModal({ isOpen: false, task: null, penalty: null })}
+              className="absolute top-4 right-4 p-1.5 rounded-xl opacity-50 hover:opacity-100 hover:bg-current/[0.05] transition-all cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold font-serif-app text-current">Ritual Locked</h3>
+                <p className="text-[11px] font-mono opacity-50">2-Day Consecutive Breach Penalty Active</p>
+              </div>
+            </div>
+
+            <p className="text-xs font-serif-app italic opacity-85 leading-relaxed">
+              You missed <strong className="text-current not-italic font-mono">"{lockedModal.task.name}"</strong> for 2 consecutive days ({lockedModal.penalty.missedDates.join(', ')}). Under the Chrono discipline protocol, this ritual is frozen until your penalty is served.
+            </p>
+
+            <div className="p-3.5 rounded-xl bg-current/[0.03] border border-current/[0.08] text-xs font-serif-app italic text-rose-400 leading-relaxed">
+              "{lockedModal.penalty.punishmentText}"
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setLockedModal({ isOpen: false, task: null, penalty: null })}
+                className="px-3 py-1.5 rounded-xl glass-card text-xs font-mono opacity-70 hover:opacity-100 transition-all cursor-pointer"
+              >
+                Close
+              </button>
+
+              {onNavigateToTribunal && (
+                <button
+                  onClick={() => {
+                    setLockedModal({ isOpen: false, task: null, penalty: null });
+                    onNavigateToTribunal();
+                  }}
+                  className="px-4 py-1.5 rounded-xl btn-solid-invert text-xs font-mono font-medium transition-all btn-press cursor-pointer flex items-center gap-1.5"
+                >
+                  <Lock className="w-3 h-3" />
+                  <span>Go to Tribunal</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
