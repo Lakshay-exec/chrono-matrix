@@ -39,7 +39,9 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onBackToLan
       await loginWithGoogle();
       onAuthenticated();
     } catch (err: any) {
-      if (err.code === 'auth/popup-blocked') {
+      if (err.code === 'auth/unauthorized-domain') {
+        setErrorMsg('Domain not authorized in Firebase Console. Add "chrono-matrix-nine.vercel.app" to Firebase -> Authentication -> Settings -> Authorized Domains.');
+      } else if (err.code === 'auth/popup-blocked') {
         setErrorMsg('Popup was blocked by your browser. Please allow popups or use Email & Password sign-in below.');
       } else if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
         setErrorMsg('Sign-in popup was closed.');
@@ -77,7 +79,8 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onBackToLan
       }
       onAuthenticated();
     } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') setErrorMsg('This email is already registered.');
+      if (err.code === 'auth/unauthorized-domain') setErrorMsg('Domain not authorized in Firebase. Add "chrono-matrix-nine.vercel.app" to Firebase -> Authentication -> Settings -> Authorized Domains.');
+      else if (err.code === 'auth/email-already-in-use') setErrorMsg('This email is already registered.');
       else if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential')
         setErrorMsg('Invalid email or password.');
       else setErrorMsg(err.message || 'Authentication error.');
