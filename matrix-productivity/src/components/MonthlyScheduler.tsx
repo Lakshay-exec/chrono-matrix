@@ -68,7 +68,7 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
     const colWidth = 36;
-    const stickyWidth = window.innerWidth < 640 ? 135 : 220;
+    const stickyWidth = window.innerWidth < 640 ? 130 : 220;
     const targetScroll = Math.max(
       0,
       (todayNum - 1) * colWidth - (container.clientWidth - stickyWidth) / 2 + colWidth
@@ -125,7 +125,7 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
     return s;
   };
 
-  // Calculate 7-day window for Week View
+  // Calculate 7-day window for Week View (Monday to Sunday)
   const weekDays = (() => {
     const base = new Date();
     const dayOfWeek = base.getDay();
@@ -282,28 +282,32 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
       {/* MATRIX TABLE CONTAINER */}
       <div className="glass-card rounded-2xl overflow-hidden border border-current/[0.08]">
         
-        {/* ===================== VIEW 1: WEEK VIEW (Optimized for Mobile) ===================== */}
+        {/* ===================== VIEW 1: WEEK VIEW (100% Screen Fit on Mobile) ===================== */}
         {viewMode === 'week' && (
           <div className="w-full overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table className="w-full table-fixed border-collapse">
               <thead>
                 <tr className="border-b border-current/[0.07] bg-current/[0.015]">
-                  <th className="sticky left-0 z-20 bg-[var(--bg-app)] px-3 py-2.5 text-left text-[11px] font-mono uppercase tracking-wider opacity-60 w-40 sm:w-60 min-w-[145px] sm:min-w-[210px] border-r border-current/[0.07]">
+                  {/* Sticky Ritual Column Header */}
+                  <th className="sticky left-0 z-20 bg-[var(--bg-app)] px-2 sm:px-3 py-2 text-left text-[10px] sm:text-[11px] font-mono uppercase tracking-wider opacity-60 w-[130px] sm:w-[220px] border-r border-current/[0.07]">
                     Ritual
                   </th>
+
+                  {/* 7 Evenly Distributed Day Columns (Guaranteed 100% screen fit) */}
                   {weekDays.map((wd) => {
                     const dayEntry = journal?.[wd.dayKey];
                     return (
                       <th
                         key={wd.dayKey}
-                        className={`text-center py-2 px-1 border-r border-current/[0.04] transition-colors ${
+                        className={`text-center py-2 px-0.5 border-r border-current/[0.04] transition-colors ${
                           wd.isToday ? 'bg-current/[0.06] font-bold' : ''
                         }`}
+                        style={{ width: 'calc((100% - 130px) / 7)' }}
                         title={dayEntry ? `Thought: "${dayEntry.line}" (${dayEntry.mood})` : undefined}
                       >
                         <div className="flex flex-col items-center">
-                          <span className="text-[9px] font-mono opacity-40 uppercase">{wd.wday}</span>
-                          <span className={`text-xs font-mono ${wd.isToday ? 'font-extrabold text-current' : 'opacity-65'}`}>
+                          <span className="text-[8px] sm:text-[9px] font-mono opacity-40 uppercase">{wd.wday}</span>
+                          <span className={`text-[11px] sm:text-xs font-mono ${wd.isToday ? 'font-extrabold text-current' : 'opacity-65'}`}>
                             {wd.dayNum}
                           </span>
                           {wd.isToday ? (
@@ -340,85 +344,80 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
 
                     return (
                       <tr key={task.id} className="group hover:bg-current/[0.015] transition-colors">
-                        {/* Sticky Left Column: Ritual Title & Badges */}
-                        <td className="sticky left-0 z-10 bg-[var(--bg-app)] px-3 py-2 border-r border-current/[0.07] w-40 sm:w-60 min-w-[145px] sm:min-w-[210px]">
-                          <div className="flex items-center justify-between gap-1.5">
-                            <div className="flex items-start gap-2 min-w-0">
+                        {/* Sticky Ritual Column: 2-Line Layout for 100% Full Text Visibility */}
+                        <td className="sticky left-0 z-10 bg-[var(--bg-app)] px-2 sm:px-3 py-2 border-r border-current/[0.07] w-[130px] sm:w-[220px]">
+                          <div className="flex flex-col justify-center min-w-0">
+                            
+                            {/* Row 1: Color Tag + Full Ritual Name (NO aggressive truncate!) */}
+                            <div className="flex items-start gap-1.5 min-w-0">
                               <div
                                 className="w-2 h-2 rounded-full shrink-0 mt-1"
                                 style={{ backgroundColor: task.colorTag || '#71717a' }}
                               />
-                              <div className="min-w-0">
-                                {/* Fully visible, cleanly wrapped title */}
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span 
-                                    className="text-[11px] sm:text-xs font-semibold text-current leading-snug line-clamp-2 break-words"
-                                    title={task.name}
-                                  >
-                                    {task.name}
-                                  </span>
-                                  {locked && (
-                                    <span 
-                                      className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded bg-rose-500/15 text-[9px] font-mono text-rose-400 font-bold shrink-0"
-                                      title="Ritual Locked by Tribunal Penalty"
-                                    >
-                                      <Lock className="w-2.5 h-2.5" />
-                                      Locked
-                                    </span>
-                                  )}
-                                </div>
-                                
-                                <div className="flex items-center gap-1.5 mt-0.5">
-                                  <span className="text-[9px] sm:text-[10px] opacity-40 font-mono truncate">
-                                    {task.category}
-                                  </span>
-                                  {s > 0 && (
-                                    <span className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-mono font-bold text-amber-500 shrink-0">
-                                      <Flame className="w-2.5 h-2.5 fill-amber-500" />
-                                      {s}d
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
+                              <span 
+                                className="text-[11px] sm:text-xs font-semibold text-current leading-snug break-words"
+                                title={task.name}
+                              >
+                                {task.name}
+                              </span>
                             </div>
 
-                            {/* Warning and Delete actions */}
-                            <div className="flex items-center gap-0.5 shrink-0">
-                              {/* Day 2 Alert Warning: Appears only on Day 2 of missing, vanishes as soon as user ticks today! */}
-                              {isDay2Risk && !locked && (
-                                <button
-                                  type="button"
-                                  title="Day 2 Risk: Complete today's target to avoid 2-day Tribunal punishment!"
-                                  className="p-1 rounded-lg text-rose-500 animate-pulse transition-all cursor-help"
-                                >
-                                  <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                                </button>
+                            {/* Row 2: Category + Streak + Warning/Lock Badges + Delete */}
+                            <div className="flex items-center gap-1.5 pl-3.5 mt-1 flex-wrap">
+                              <span className="text-[9px] opacity-40 font-mono">
+                                {task.category}
+                              </span>
+
+                              {s > 0 && (
+                                <span className="flex items-center gap-0.5 text-[9px] font-mono font-bold text-amber-500">
+                                  <Flame className="w-2.5 h-2.5 fill-amber-500" />
+                                  {s}d
+                                </span>
                               )}
+
+                              {locked ? (
+                                <span 
+                                  className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded bg-rose-500/15 text-[8px] font-mono text-rose-400 font-bold"
+                                  title="Ritual Locked by Tribunal Penalty"
+                                >
+                                  <Lock className="w-2 h-2" />
+                                  Locked
+                                </span>
+                              ) : isDay2Risk ? (
+                                <span 
+                                  className="inline-flex items-center gap-0.5 text-[8px] font-mono text-rose-500 font-bold bg-rose-500/10 px-1 py-0.2 rounded"
+                                  title="Day 2 Risk: Complete today's target to clear warning!"
+                                >
+                                  <AlertTriangle className="w-2.5 h-2.5" />
+                                  Day 2
+                                </span>
+                              ) : null}
 
                               <button
                                 onClick={() => onDeleteTask(task.id)}
                                 title="Delete ritual"
-                                className="p-1 rounded-lg opacity-40 hover:opacity-100 hover:text-rose-400 transition-all cursor-pointer"
+                                className="opacity-30 hover:opacity-100 hover:text-rose-400 transition-all p-0.5 cursor-pointer ml-auto"
                               >
-                                <Trash2 className="w-3 h-3" />
+                                <Trash2 className="w-2.5 h-2.5" />
                               </button>
                             </div>
+
                           </div>
                         </td>
 
-                        {/* 7 Days of the Week */}
+                        {/* 7 Day Checkboxes */}
                         {weekDays.map((wd) => {
                           const done = task.history?.[wd.dayKey] === 'done';
                           return (
                             <td
                               key={wd.dayKey}
-                              className={`p-1 text-center border-r border-current/[0.04] ${
+                              className={`p-0.5 sm:p-1 text-center border-r border-current/[0.04] ${
                                 wd.isToday ? 'bg-current/[0.03]' : ''
                               }`}
                             >
                               <button
                                 onClick={() => handleClick(task, wd.dayKey, wd.isToday)}
-                                className={`w-7 h-7 sm:w-8 sm:h-8 mx-auto rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                                className={`w-6 h-6 sm:w-7 sm:h-7 mx-auto rounded-lg flex items-center justify-center transition-all cursor-pointer ${
                                   locked
                                     ? 'opacity-40 cursor-not-allowed bg-rose-500/10 border border-rose-500/30'
                                     : done
@@ -434,7 +433,7 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
                                 {locked ? (
                                   <Lock className="w-3 h-3 text-rose-400" />
                                 ) : done ? (
-                                  <Check className="w-3.5 h-3.5" style={{ strokeWidth: 3 }} />
+                                  <Check className="w-3 h-3" style={{ strokeWidth: 3 }} />
                                 ) : null}
                               </button>
                             </td>
@@ -455,7 +454,7 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
             <table className="w-full border-collapse min-w-[780px] sm:min-w-[950px]">
               <thead>
                 <tr className="border-b border-current/[0.07] bg-current/[0.015]">
-                  <th className="sticky left-0 z-20 bg-[var(--bg-app)] px-3 py-2.5 text-left text-[11px] font-mono uppercase tracking-wider opacity-60 w-36 sm:w-60 min-w-[130px] sm:min-w-[210px] border-r border-current/[0.07]">
+                  <th className="sticky left-0 z-20 bg-[var(--bg-app)] px-2 sm:px-3 py-2.5 text-left text-[11px] font-mono uppercase tracking-wider opacity-60 w-[130px] sm:w-[220px] border-r border-current/[0.07]">
                     Ritual
                   </th>
                   {Array.from({ length: daysInMonth }, (_, i) => {
@@ -511,64 +510,63 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
 
                     return (
                       <tr key={task.id} className="group hover:bg-current/[0.015] transition-colors">
-                        <td className="sticky left-0 z-10 bg-[var(--bg-app)] px-3 py-2 border-r border-current/[0.07] w-36 sm:w-60 min-w-[130px] sm:min-w-[210px]">
-                          <div className="flex items-center justify-between gap-1.5">
-                            <div className="flex items-start gap-2 min-w-0">
+                        <td className="sticky left-0 z-10 bg-[var(--bg-app)] px-2 sm:px-3 py-2 border-r border-current/[0.07] w-[130px] sm:w-[220px]">
+                          <div className="flex flex-col justify-center min-w-0">
+                            
+                            {/* Row 1: Color Tag + Full Ritual Name */}
+                            <div className="flex items-start gap-1.5 min-w-0">
                               <div
                                 className="w-2 h-2 rounded-full shrink-0 mt-1"
                                 style={{ backgroundColor: task.colorTag || '#71717a' }}
                               />
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span 
-                                    className="text-[11px] sm:text-xs font-semibold text-current leading-snug line-clamp-2 break-words"
-                                    title={task.name}
-                                  >
-                                    {task.name}
-                                  </span>
-                                  {locked && (
-                                    <span 
-                                      className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded bg-rose-500/15 text-[9px] font-mono text-rose-400 font-bold shrink-0"
-                                      title="Ritual Locked by Tribunal Penalty"
-                                    >
-                                      <Lock className="w-2.5 h-2.5" />
-                                      Locked
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-1.5 mt-0.5">
-                                  <span className="text-[9px] sm:text-[10px] opacity-40 font-mono truncate">
-                                    {task.category}
-                                  </span>
-                                  {s > 0 && (
-                                    <span className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-mono font-bold text-amber-500 shrink-0">
-                                      <Flame className="w-2.5 h-2.5 fill-amber-500" />
-                                      {s}d
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
+                              <span 
+                                className="text-[11px] sm:text-xs font-semibold text-current leading-snug break-words"
+                                title={task.name}
+                              >
+                                {task.name}
+                              </span>
                             </div>
 
-                            <div className="flex items-center gap-0.5 shrink-0">
-                              {isDay2Risk && !locked && (
-                                <button
-                                  type="button"
-                                  title="Day 2 Risk: Complete today's target to avoid 2-day Tribunal punishment!"
-                                  className="p-1 rounded-lg text-rose-500 animate-pulse transition-all cursor-help"
-                                >
-                                  <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                                </button>
+                            {/* Row 2: Category + Streak + Warning/Lock Badges + Delete */}
+                            <div className="flex items-center gap-1.5 pl-3.5 mt-1 flex-wrap">
+                              <span className="text-[9px] opacity-40 font-mono">
+                                {task.category}
+                              </span>
+
+                              {s > 0 && (
+                                <span className="flex items-center gap-0.5 text-[9px] font-mono font-bold text-amber-500">
+                                  <Flame className="w-2.5 h-2.5 fill-amber-500" />
+                                  {s}d
+                                </span>
                               )}
+
+                              {locked ? (
+                                <span 
+                                  className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded bg-rose-500/15 text-[8px] font-mono text-rose-400 font-bold"
+                                  title="Ritual Locked by Tribunal Penalty"
+                                >
+                                  <Lock className="w-2 h-2" />
+                                  Locked
+                                </span>
+                              ) : isDay2Risk ? (
+                                <span 
+                                  className="inline-flex items-center gap-0.5 text-[8px] font-mono text-rose-500 font-bold bg-rose-500/10 px-1 py-0.2 rounded"
+                                  title="Day 2 Risk: Complete today's target to clear warning!"
+                                >
+                                  <AlertTriangle className="w-2.5 h-2.5" />
+                                  Day 2
+                                </span>
+                              ) : null}
 
                               <button
                                 onClick={() => onDeleteTask(task.id)}
                                 title="Delete ritual"
-                                className="p-1 rounded-lg opacity-40 hover:opacity-100 hover:text-rose-400 transition-all cursor-pointer"
+                                className="opacity-30 hover:opacity-100 hover:text-rose-400 transition-all p-0.5 cursor-pointer ml-auto"
                               >
-                                <Trash2 className="w-3 h-3" />
+                                <Trash2 className="w-2.5 h-2.5" />
                               </button>
                             </div>
+
                           </div>
                         </td>
 
