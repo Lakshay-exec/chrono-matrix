@@ -29,7 +29,14 @@ import { PunishmentModal } from './components/PunishmentModal';
 import { AddTaskModal } from './components/AddTaskModal';
 import { DownloadPage } from './components/DownloadPage';
 import { HorizontalSlide } from './components/HorizontalSlide';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Calendar, 
+  TrendingUp, 
+  Moon, 
+  ShieldAlert 
+} from 'lucide-react';
 
 type ViewMode = 'landing' | 'auth' | 'app' | 'download';
 
@@ -38,6 +45,13 @@ const SLIDE_IDS = [
   'section-curve',
   'section-sleep',
   'section-accountability',
+];
+
+const NAV_TABS = [
+  { id: 'section-matrix', label: 'Matrix', icon: Calendar },
+  { id: 'section-curve', label: 'Curve', icon: TrendingUp },
+  { id: 'section-sleep', label: 'Sleep', icon: Moon },
+  { id: 'section-accountability', label: 'Tribunal', icon: ShieldAlert },
 ];
 
 export default function App() {
@@ -378,7 +392,7 @@ export default function App() {
 
   // 4. Horizontal Scrolling Deck Dashboard
   return (
-    <div className={`h-screen w-screen bg-[var(--bg-app)] text-[var(--text-main)] flex flex-col font-sans-app overflow-hidden transition-colors ${potatoMode ? 'potato-mode' : ''}`}>
+    <div className={`h-[100dvh] min-h-[100dvh] w-full max-w-full bg-[var(--bg-app)] text-[var(--text-main)] flex flex-col font-sans-app overflow-x-hidden transition-colors ${potatoMode ? 'potato-mode' : ''}`}>
       {/* Interactive mouse ambient aura */}
       <MouseAura enabled={!potatoMode} />
 
@@ -396,11 +410,12 @@ export default function App() {
         user={user}
         onLogout={handleLogout}
         onOpenDownload={() => setViewMode('download')}
+        onOpenAuth={() => setViewMode('auth')}
         activeStrikesCount={activeStrikesCount}
       />
 
       {/* Top Floating Quote & Reflection Bar (pinned right above the horizontal deck) */}
-      <div className="w-full shrink-0 z-30 px-4 sm:px-6 pt-2.5 pb-1 space-y-1.5 max-w-7xl mx-auto">
+      <div className="w-full shrink-0 z-30 px-3 sm:px-6 pt-1.5 sm:pt-2.5 pb-1 space-y-1.5 max-w-7xl mx-auto">
         {quoteState.showQuote && (
           <DailyQuoteBanner
             customQuote={quoteState.customQuote}
@@ -417,7 +432,7 @@ export default function App() {
       {/* Main Horizontal Canvas: Scrolls left-to-right smoothly via native scroll / navigation */}
       <main
         ref={horizontalCanvasRef}
-        className="horizontal-canvas flex-1 w-full overflow-x-auto overflow-y-auto flex flex-row items-start gap-6 sm:gap-10 px-4 sm:px-8 py-4 snap-x snap-mandatory"
+        className="horizontal-canvas flex-1 w-full overflow-x-auto overflow-y-auto flex flex-row items-start gap-4 sm:gap-10 px-2.5 sm:px-8 py-2.5 sm:py-4 snap-x snap-mandatory"
       >
         {/* Slide 1: Monthly Matrix Scheduler */}
         <HorizontalSlide
@@ -480,9 +495,32 @@ export default function App() {
         </HorizontalSlide>
       </main>
 
-      {/* Minimal Bottom Floating Navigation Dock: Left / Right Arrows + Slide Counter */}
-      <div className="shrink-0 w-full py-2 px-6 border-t border-current/[0.07] bg-[var(--nav-bg)] backdrop-blur-xl z-30 flex items-center justify-between text-xs font-mono">
-        <div className="flex items-center gap-3">
+      {/* Bottom Floating Navigation Dock */}
+      <div className="shrink-0 w-full py-1.5 sm:py-2 px-3 sm:px-6 border-t border-current/[0.07] bg-[var(--nav-bg)] backdrop-blur-xl z-30 flex items-center justify-between text-xs font-mono">
+        {/* Mobile View: 4 Fast Touch Tabs */}
+        <div className="flex md:hidden items-center justify-around w-full gap-1">
+          {NAV_TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isAct = activeSection === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleScrollToSection(tab.id)}
+                className={`flex-1 flex flex-col items-center py-1 px-1.5 rounded-xl transition-all cursor-pointer ${
+                  isAct
+                    ? 'btn-solid-invert font-bold shadow-sm'
+                    : 'opacity-50 hover:opacity-100 hover:bg-current/[0.04]'
+                }`}
+              >
+                <Icon className="w-4 h-4 mb-0.5" />
+                <span className="text-[10px] tracking-tight">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Desktop View: Left / Right Arrows + Slide Counter + Offline Hub */}
+        <div className="hidden md:flex items-center gap-3">
           <button
             onClick={handlePrevSlide}
             disabled={SLIDE_IDS.indexOf(activeSection) === 0}
@@ -490,7 +528,7 @@ export default function App() {
             title="Previous Tab"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Prev</span>
+            <span>Prev</span>
           </button>
 
           {/* Minimal Dot Indicators */}
@@ -519,12 +557,12 @@ export default function App() {
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg glass-card opacity-70 hover:opacity-100 disabled:opacity-20 disabled:cursor-not-allowed btn-press transition-all cursor-pointer"
             title="Next Tab"
           >
-            <span className="hidden sm:inline">Next</span>
+            <span>Next</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="flex items-center gap-3 opacity-60">
+        <div className="hidden md:flex items-center gap-3 opacity-60">
           <button
             onClick={() => setViewMode('landing')}
             className="hover:underline opacity-70 hover:opacity-100 cursor-pointer"

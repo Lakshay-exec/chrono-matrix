@@ -39,7 +39,15 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onBackToLan
       await loginWithGoogle();
       onAuthenticated();
     } catch (err: any) {
-      setErrorMsg(err.message || 'Google sign-in failed.');
+      if (err.code === 'auth/popup-blocked') {
+        setErrorMsg('Popup was blocked by your browser. Please allow popups or use Email & Password sign-in below.');
+      } else if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
+        setErrorMsg('Sign-in popup was closed.');
+      } else if (err.message?.includes('disallowed_useragent')) {
+        setErrorMsg('Google Sign-In is restricted inside in-app browsers (WhatsApp/Instagram). Please open this site in Chrome or Safari, or sign in with Email below.');
+      } else {
+        setErrorMsg(err.message || 'Google sign-in failed. Try email sign-in below.');
+      }
     } finally {
       setGoogleLoading(false);
     }
@@ -141,6 +149,10 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated, onBackToLan
               </>
             )}
           </button>
+          
+          <p className="text-[10px] opacity-40 font-mono text-center -mt-2">
+            Tip: Inside WhatsApp or Instagram, use Email sign-in below.
+          </p>
 
           {/* Divider */}
           <div className="flex items-center gap-4">

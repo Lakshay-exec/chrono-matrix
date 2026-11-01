@@ -194,9 +194,9 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ records, onSaveRecor
                       style={{ height: `${pct}%` }}
                     />
                   </div>
-                  <div className="mt-2 text-center">
-                    <span className="block text-[11px] font-mono opacity-70">{c.label}</span>
-                    <span className="block text-[9px] opacity-40 font-mono uppercase">{c.wd}</span>
+                  <div className="mt-2 text-center w-full">
+                    <span className="block text-[8px] sm:text-[11px] font-mono opacity-70 truncate">{c.label}</span>
+                    <span className="block text-[7px] sm:text-[9px] opacity-40 font-mono uppercase">{c.wd}</span>
                   </div>
                 </div>
               );
