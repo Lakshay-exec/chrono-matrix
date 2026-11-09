@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { DailyJournalEntry } from '../types';
-import { Check, Calendar, BookOpen, RotateCcw } from 'lucide-react';
+import { Check, Calendar, BookOpen, RotateCcw, Sparkles, Minus, TrendingDown } from 'lucide-react';
 import { JournalHistoryModal } from './JournalHistoryModal';
 
 interface DailyReflectionBarProps {
@@ -79,45 +79,45 @@ export const DailyReflectionBar: React.FC<DailyReflectionBarProps> = ({
                 )}
               </div>
 
-              {/* Minimalist Mood Selector */}
+              {/* Minimalist Mood Selector with tactile icons */}
               <div className="flex items-center gap-0.5 bg-current/[0.03] p-0.5 rounded-xl border border-current/[0.08] shrink-0">
                 <button
                   type="button"
                   onClick={() => setMood('good')}
-                  title="Good (Growth / Discipline)"
+                  title="Ascending (Growth & Discipline)"
                   className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg text-[11px] sm:text-xs font-mono transition-all cursor-pointer ${
                     mood === 'good'
-                      ? 'btn-solid-invert font-bold shadow-sm'
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold shadow-sm'
                       : 'opacity-50 hover:opacity-90'
                   }`}
                 >
-                  <span className="text-[10px]">▲</span>
+                  <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
                   <span className="hidden xs:inline">Ascending</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMood('neutral')}
-                  title="Steady (Balanced)"
+                  title="Steady (Balanced Routine)"
                   className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg text-[11px] sm:text-xs font-mono transition-all cursor-pointer ${
                     mood === 'neutral'
                       ? 'btn-solid-invert font-bold shadow-sm'
                       : 'opacity-50 hover:opacity-90'
                   }`}
                 >
-                  <span className="text-[10px]">●</span>
+                  <Minus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   <span className="hidden xs:inline">Steady</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMood('bad')}
-                  title="Heavy (Missed / Struggled)"
+                  title="Heavy (Struggled or Missed)"
                   className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg text-[11px] sm:text-xs font-mono transition-all cursor-pointer ${
                     mood === 'bad'
-                      ? 'btn-solid-invert font-bold shadow-sm'
+                      ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30 font-bold shadow-sm'
                       : 'opacity-50 hover:opacity-90'
                   }`}
                 >
-                  <span className="text-[10px]">▼</span>
+                  <TrendingDown className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-rose-400" />
                   <span className="hidden xs:inline">Heavy</span>
                 </button>
               </div>
