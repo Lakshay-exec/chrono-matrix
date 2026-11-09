@@ -46,7 +46,7 @@ export const DailyQuoteBanner: React.FC<DailyQuoteBannerProps> = ({
 
   return (
     <div className="w-full">
-      <div className="glass-card rounded-2xl px-4 py-2.5 transition-all">
+      <div className="glass-card rounded-2xl px-3.5 py-1.5 transition-all">
         {isEditing ? (
           <form onSubmit={handleSave} className="space-y-2">
             <div className="flex items-center justify-between">
