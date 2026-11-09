@@ -24,12 +24,16 @@ interface LandingHeroProps {
   onExploreOffline: () => void;
   isLight: boolean;
   onRealmChange?: (realm: string) => void;
+  onOpenPrivacy?: () => void;
+  onOpenTerms?: () => void;
 }
 
 export const LandingHero: React.FC<LandingHeroProps> = ({
   onGetStarted,
   onExploreOffline,
   onRealmChange,
+  onOpenPrivacy,
+  onOpenTerms,
 }) => {
   const [showComparison, setShowComparison] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -725,9 +729,27 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       </section>
 
       {/* Footer */}
-      <footer className="px-4 sm:px-8 py-6 border-t border-current/10 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono opacity-40 gap-2">
-        <span>CHRONO MATRIX · MINIMALIST MONOCHROME PRODUCTIVITY</span>
-        <span>ZERO SUBSCRIPTIONS · OPEN SPECIFICATION 2026</span>
+      <footer className="px-4 sm:px-8 py-6 border-t border-current/10 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono opacity-50 gap-2">
+        <div className="flex items-center gap-2">
+          <span>CHRONO MATRIX · MINIMALIST PRODUCTIVITY</span>
+          <span>·</span>
+          <span>STUDENT BUILT</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onOpenPrivacy}
+            className="hover:underline hover:opacity-100 cursor-pointer"
+          >
+            Privacy Policy
+          </button>
+          <span>·</span>
+          <button
+            onClick={onOpenTerms}
+            className="hover:underline hover:opacity-100 cursor-pointer"
+          >
+            Terms of Service
+          </button>
+        </div>
       </footer>
     </div>
   );

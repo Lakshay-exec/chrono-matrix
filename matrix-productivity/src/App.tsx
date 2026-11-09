@@ -30,6 +30,7 @@ import { AddTaskModal } from './components/AddTaskModal';
 import { ResetConfirmModal } from './components/ResetConfirmModal';
 import { DownloadPage } from './components/DownloadPage';
 import { FluidDeck } from './components/FluidDeck';
+import { LegalModal } from './components/LegalPages';
 import { 
   scanAndAutoAssignPunishments, 
   resetAccountabilityBaseline, 
@@ -44,7 +45,7 @@ import {
   ShieldAlert 
 } from 'lucide-react';
 
-type ViewMode = 'landing' | 'auth' | 'app' | 'download';
+type ViewMode = 'landing' | 'auth' | 'app' | 'download' | 'privacy' | 'terms';
 
 const SLIDE_IDS = [
   'section-matrix',
@@ -289,6 +290,22 @@ export default function App() {
             setViewMode('app');
           }}
           onRealmChange={setLandingRealm}
+          onOpenPrivacy={() => setViewMode('privacy')}
+          onOpenTerms={() => setViewMode('terms')}
+        />
+      </div>
+    );
+  }
+
+  // 1b. Legal Views (Privacy Policy & Terms)
+  if (viewMode === 'privacy' || viewMode === 'terms') {
+    return (
+      <div className="relative min-h-screen w-full bg-[var(--bg-app)] text-[var(--text-main)] overflow-x-hidden">
+        <CosmicBackground activeRealm="hero" potatoMode={potatoMode} theme={theme} />
+        <MouseAura enabled={!potatoMode} />
+        <LegalModal
+          type={viewMode}
+          onBack={() => setViewMode(user || isGuest ? 'app' : 'landing')}
         />
       </div>
     );
@@ -503,6 +520,13 @@ export default function App() {
             className="hover:underline opacity-70 hover:opacity-100 cursor-pointer"
           >
             Offline Hub
+          </button>
+          <span>•</span>
+          <button
+            onClick={() => setViewMode('privacy')}
+            className="hover:underline opacity-70 hover:opacity-100 cursor-pointer"
+          >
+            Privacy
           </button>
         </div>
       </div>
