@@ -9,7 +9,8 @@ import {
   Zap,
   Check,
   X,
-  ChevronDown
+  ChevronDown,
+  Flame
 } from 'lucide-react';
 
 interface LandingHeroProps {
@@ -53,10 +54,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
 
   return (
     <div className="min-h-screen flex flex-col justify-between px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative overflow-hidden page-enter">
-      {/* Background ambient lighting */}
+      {/* Futuristic cyber grid & ambient lighting */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[750px] h-[750px] rounded-full bg-white/[0.015] blur-[140px]" />
-        <div className="absolute bottom-0 right-10 w-[500px] h-[500px] rounded-full bg-white/[0.01] blur-[100px]" />
+        <div className="absolute inset-0 cyber-grid opacity-80" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] h-[850px] rounded-full bg-emerald-500/[0.035] blur-[150px]" />
+        <div className="absolute top-1/3 right-10 w-[550px] h-[550px] rounded-full bg-purple-500/[0.03] blur-[120px]" />
+        <div className="absolute bottom-0 left-10 w-[500px] h-[500px] rounded-full bg-white/[0.015] blur-[100px]" />
       </div>
 
       {/* Top brand indicator */}
@@ -96,11 +99,11 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           If you deteriorate one percent each day, you decline nearly to zero."
         </p>
 
-        {/* CTA Buttons */}
+        {/* CTA Buttons with Shimmer Sweep */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4 max-w-md mx-auto sm:max-w-none">
           <button
             onClick={onGetStarted}
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl btn-solid-invert font-semibold text-sm sm:text-base transition-all shadow-2xl flex items-center justify-center gap-3 btn-press cursor-pointer"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl btn-solid-invert btn-shimmer font-semibold text-sm sm:text-base transition-all shadow-2xl flex items-center justify-center gap-3 btn-press cursor-pointer"
           >
             <span>Start Tracking (Google / Email)</span>
             <ArrowRight className="w-5 h-5" />
@@ -115,12 +118,157 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
         </div>
       </div>
 
-      {/* 4 Core Pillars of where it helps */}
-      <div className="max-w-6xl mx-auto w-full z-10 pt-8 pb-12">
+      {/* =========================================================================
+          FUTURISTIC 3D PERSPECTIVE HERO CONSOLE (Webflow Labs & Riffs Inspired)
+         ========================================================================= */}
+      <div className="max-w-5xl mx-auto w-full z-10 my-8 sm:my-14 perspective-mockup px-2 sm:px-4">
+        <div className="relative">
+          {/* Ambient Glowing Orbs */}
+          <div className="absolute -top-12 left-1/4 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse" />
+          <div className="absolute -bottom-10 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
+          {/* Floating Telemetry Badges with Staggered Motion */}
+          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card bento-card text-[11px] font-mono tracking-tight absolute -top-5 -left-4 z-20 float-delay-1 border border-emerald-500/30">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 beacon-pulse" />
+            <span>(1.01)³⁶⁵ = 37.8× COMPOUNDING</span>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card bento-card text-[11px] font-mono tracking-tight absolute -top-4 -right-4 z-20 float-delay-2 border border-purple-500/30">
+            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            <span>AI WARDEN ENFORCED</span>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card bento-card text-[11px] font-mono tracking-tight absolute -bottom-5 -left-3 z-20 float-delay-3 border border-white/20">
+            <HardDrive className="w-3.5 h-3.5 text-cyan-400" />
+            <span>AIR-GAPPED LOCAL PWA</span>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card bento-card text-[11px] font-mono tracking-tight absolute -bottom-5 -right-3 z-20 float-delay-1 border border-amber-500/30">
+            <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <span>ZERO UNEXPLAINED BREAKS</span>
+          </div>
+
+          {/* Main 3D Container with Rotating Border Beam */}
+          <div className="border-beam p-[1px] perspective-inner shadow-2xl">
+            <div className="border-beam-content rounded-3xl p-3.5 sm:p-6 space-y-4 border border-current/[0.1]">
+              
+              {/* Window Header Chrome */}
+              <div className="flex items-center justify-between pb-3 border-b border-current/[0.08]">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500/70" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
+                  <span className="ml-2 text-[10px] sm:text-xs font-mono opacity-50">chrono.matrix // console</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse" />
+                  <span className="text-emerald-400 font-bold tracking-wider">DISCIPLINE MATRIX ACTIVE</span>
+                </div>
+              </div>
+
+              {/* Console Mock Content: Mini Habit Matrix + Mini Curve */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+                
+                {/* Left 2 Cols: Interactive Habit Matrix Preview */}
+                <div className="md:col-span-2 space-y-2 font-mono text-xs">
+                  <div className="flex items-center justify-between text-[10px] opacity-50 uppercase tracking-wider pb-1">
+                    <span>Active Rituals</span>
+                    <span>Mo Tu We Th Fr Sa Su</span>
+                  </div>
+
+                  {/* Habit Row 1 */}
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-current/[0.03] border border-current/[0.06] hover:bg-current/[0.06] transition-all">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-cyan-400 shrink-0" />
+                      <span className="font-semibold text-current text-xs">Deep Focus Block</span>
+                      <span className="text-[10px] text-amber-400 flex items-center gap-0.5">🔥 14d</span>
+                    </div>
+                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                      {[1, 1, 1, 1, 1, 1, 1].map((_, i) => (
+                        <div key={i} className="w-5 h-5 rounded-md cell-checked flex items-center justify-center">
+                          <Check className="w-3 h-3 text-black" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Habit Row 2 */}
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-current/[0.03] border border-current/[0.06] hover:bg-current/[0.06] transition-all">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                      <span className="font-semibold text-current text-xs">Physical Resistance</span>
+                      <span className="text-[10px] text-amber-400 flex items-center gap-0.5">🔥 9d</span>
+                    </div>
+                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                      {[1, 1, 1, 1, 1, 0, 1].map((done, i) => (
+                        <div key={i} className={`w-5 h-5 rounded-md flex items-center justify-center ${done ? 'cell-checked' : 'cell-unchecked'}`}>
+                          {done ? <Check className="w-3 h-3 text-black" /> : null}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Habit Row 3 */}
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-current/[0.03] border border-current/[0.06] hover:bg-current/[0.06] transition-all">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
+                      <span className="font-semibold text-current text-xs">Evening Stoic Reflection</span>
+                      <span className="text-[10px] text-amber-400 flex items-center gap-0.5">🔥 21d</span>
+                    </div>
+                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                      {[1, 1, 1, 1, 1, 1, 1].map((_, i) => (
+                        <div key={i} className="w-5 h-5 rounded-md cell-checked flex items-center justify-center">
+                          <Check className="w-3 h-3 text-black" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right 1 Col: Mini Telemetry Card */}
+                <div className="p-3.5 rounded-2xl bg-current/[0.025] border border-current/[0.08] flex flex-col justify-between space-y-3 font-mono">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[10px] opacity-50">
+                      <span>Compounding</span>
+                      <TrendingUp className="w-3 h-3 text-emerald-400" />
+                    </div>
+                    <div className="text-2xl font-bold text-emerald-400">+38.4%</div>
+                    <div className="text-[10px] opacity-60">vs 30d baseline</div>
+                  </div>
+
+                  {/* Mini Ascending Graph Path */}
+                  <div className="h-12 w-full flex items-end gap-1 pt-1">
+                    {[30, 42, 45, 50, 60, 68, 75, 82, 88, 95, 100].map((h, i) => (
+                      <div 
+                        key={i} 
+                        className="flex-1 bg-current opacity-20 hover:opacity-100 hover:bg-emerald-400 rounded-t transition-all"
+                        style={{ height: `${h}%` }}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="pt-1 border-t border-current/[0.08] flex items-center justify-between text-[10px]">
+                    <span className="opacity-50">Breach Tribunal</span>
+                    <span className="text-emerald-400 font-bold">ARMED · 0 PENALTIES</span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4 Futuristic Webflow-Style Bento Pillars */}
+      <div className="max-w-6xl mx-auto w-full z-10 pt-4 pb-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="glass-card rounded-2xl p-5 space-y-2">
-            <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
-              <TrendingUp className="w-4 h-4 text-emerald-400" />
+          <div className="bento-card rounded-2xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+              </div>
+              <span className="text-[10px] font-mono opacity-40 uppercase">[SYS.01]</span>
             </div>
             <h3 className="text-sm font-semibold">1% Compounding Curve</h3>
             <p className="text-xs opacity-70 leading-relaxed">
@@ -128,9 +276,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             </p>
           </div>
 
-          <div className="glass-card rounded-2xl p-5 space-y-2">
-            <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
-              <ShieldAlert className="w-4 h-4 text-rose-400" />
+          <div className="bento-card rounded-2xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
+                <ShieldAlert className="w-4 h-4 text-rose-400" />
+              </div>
+              <span className="text-[10px] font-mono opacity-40 uppercase">[SYS.02]</span>
             </div>
             <h3 className="text-sm font-semibold">AI Accountability Tribunal</h3>
             <p className="text-xs opacity-70 leading-relaxed">
@@ -138,9 +289,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             </p>
           </div>
 
-          <div className="glass-card rounded-2xl p-5 space-y-2">
-            <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
-              <Moon className="w-4 h-4 text-amber-300" />
+          <div className="bento-card rounded-2xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
+                <Moon className="w-4 h-4 text-amber-300" />
+              </div>
+              <span className="text-[10px] font-mono opacity-40 uppercase">[SYS.03]</span>
             </div>
             <h3 className="text-sm font-semibold">Sleep & Midday Naps</h3>
             <p className="text-xs opacity-70 leading-relaxed">
@@ -148,9 +302,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             </p>
           </div>
 
-          <div className="glass-card rounded-2xl p-5 space-y-2">
-            <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
-              <Zap className="w-4 h-4 text-purple-400" />
+          <div className="bento-card rounded-2xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
+                <Zap className="w-4 h-4 text-purple-400" />
+              </div>
+              <span className="text-[10px] font-mono opacity-40 uppercase">[SYS.04]</span>
             </div>
             <h3 className="text-sm font-semibold">Daily Micro-Journal</h3>
             <p className="text-xs opacity-70 leading-relaxed">
