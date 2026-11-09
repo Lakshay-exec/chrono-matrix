@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface DeckModule {
@@ -38,11 +38,45 @@ export const FluidDeck: React.FC<FluidDeckProps> = ({
     prevIndexRef.current = nextIndex;
   }, [activeSection]);
 
-  // Swipe gesture support for mobile
+  const contentRef = useRef<HTMLDivElement>(null);
+  const scrollCooldown = useRef(false);
+
+  // Trigger navigation with safety cooldown
+  const triggerNavigate = useCallback(
+    (dir: 1 | -1) => {
+      if (!onSectionChange || scrollCooldown.current) return;
+      const curIdx = SECTION_ORDER.indexOf(activeSection);
+      const nextIdx = curIdx + dir;
+      if (nextIdx >= 0 && nextIdx < SECTION_ORDER.length) {
+        scrollCooldown.current = true;
+        onSectionChange(SECTION_ORDER[nextIdx]);
+        setTimeout(() => {
+          scrollCooldown.current = false;
+        }, 650);
+      }
+    },
+    [activeSection, onSectionChange]
+  );
+
+  // Wheel scroll edge detection for desktop
+  const handleWheel = (e: React.WheelEvent) => {
+    if (Math.abs(e.deltaY) < 35 || scrollCooldown.current) return;
+    const el = contentRef.current;
+    if (!el) return;
+
+    const isAtTop = el.scrollTop <= 4;
+    const isAtBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 6;
+
+    if (e.deltaY > 50 && isAtBottom) {
+      triggerNavigate(1);
+    } else if (e.deltaY < -50 && isAtTop) {
+      triggerNavigate(-1);
+    }
+  };
+
+  // Touch swipe support for mobile
   const touchStartY = useRef<number | null>(null);
   const touchStartX = useRef<number | null>(null);
-  const swipeCooldown = useRef(false);
-  const contentRef = useRef<HTMLDivElement>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
@@ -50,33 +84,24 @@ export const FluidDeck: React.FC<FluidDeckProps> = ({
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartY.current === null || touchStartX.current === null) return;
-    if (swipeCooldown.current) return;
+    if (touchStartY.current === null || touchStartX.current === null || scrollCooldown.current) return;
 
     const dy = touchStartY.current - e.changedTouches[0].clientY;
     const dx = Math.abs(touchStartX.current - e.changedTouches[0].clientX);
 
-    // Only vertical swipes, not horizontal (don't interfere with horizontal scrollable content)
-    if (Math.abs(dy) < 60 || dx > Math.abs(dy) * 0.8) return;
+    // Only vertical gestures, avoid horizontal gestures so tables/charts can scroll sideways
+    if (Math.abs(dy) > 55 && dx < Math.abs(dy) * 0.7) {
+      const el = contentRef.current;
+      if (el) {
+        const isAtTop = el.scrollTop <= 4;
+        const isAtBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 6;
 
-    // Only trigger when content is scrolled to edge
-    const el = contentRef.current;
-    if (!el) return;
-    const atTop = el.scrollTop <= 2;
-    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
-
-    if (dy > 0 && atBottom && onSectionChange) {
-      // Swipe up → next section
-      swipeCooldown.current = true;
-      const idx = SECTION_ORDER.indexOf(activeSection);
-      if (idx < SECTION_ORDER.length - 1) onSectionChange(SECTION_ORDER[idx + 1]);
-      setTimeout(() => { swipeCooldown.current = false; }, 600);
-    } else if (dy < 0 && atTop && onSectionChange) {
-      // Swipe down → prev section
-      swipeCooldown.current = true;
-      const idx = SECTION_ORDER.indexOf(activeSection);
-      if (idx > 0) onSectionChange(SECTION_ORDER[idx - 1]);
-      setTimeout(() => { swipeCooldown.current = false; }, 600);
+        if (dy > 0 && isAtBottom) {
+          triggerNavigate(1);
+        } else if (dy < 0 && isAtTop) {
+          triggerNavigate(-1);
+        }
+      }
     }
 
     touchStartY.current = null;
@@ -85,9 +110,9 @@ export const FluidDeck: React.FC<FluidDeckProps> = ({
 
   const variants = {
     enter: (dir: number) => ({
-      y: dir > 0 ? 36 : -36,
+      y: dir > 0 ? 32 : -32,
       opacity: 0,
-      filter: 'blur(4px)',
+      filter: 'blur(3px)',
     }),
     center: {
       y: 0,
@@ -97,7 +122,7 @@ export const FluidDeck: React.FC<FluidDeckProps> = ({
     exit: (dir: number) => ({
       y: dir > 0 ? -24 : 24,
       opacity: 0,
-      filter: 'blur(3px)',
+      filter: 'blur(2px)',
     }),
   };
 
@@ -118,6 +143,7 @@ export const FluidDeck: React.FC<FluidDeckProps> = ({
   return (
     <div
       className="flex-1 w-full h-full flex flex-col min-h-0 overflow-hidden relative"
+      onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
