@@ -28,7 +28,7 @@ import { PunishmentsWidget } from './components/PunishmentsWidget';
 import { AddTaskModal } from './components/AddTaskModal';
 import { ResetConfirmModal } from './components/ResetConfirmModal';
 import { DownloadPage } from './components/DownloadPage';
-import { TreeBranchNavigator } from './components/TreeBranchNavigator';
+import { FluidDeck } from './components/FluidDeck';
 import { 
   scanAndAutoAssignPunishments, 
   resetAccountabilityBaseline, 
@@ -355,18 +355,14 @@ export default function App() {
         />
       </div>
 
-      {/* 3D Organic Tree Branch Camera Navigator */}
-      <main className="flex-1 w-full relative flex flex-col overflow-hidden">
-        <TreeBranchNavigator
+      {/* Precision Viewport Deck: 100% Screen-Fit with Silky Page Transitions */}
+      <main className="flex-1 w-full min-h-0 flex flex-col overflow-hidden">
+        <FluidDeck
           activeSection={activeSection}
-          onSelectSection={(sId) => setActiveSection(sId)}
           modules={[
             {
               id: 'section-matrix',
               label: 'Ritual Matrix',
-              subtitle: 'Daily Execution & Micro-Consistency',
-              icon: Calendar,
-              branchName: 'Canopy Alpha',
               component: (
                 <MonthlyScheduler
                   tasks={tasks}
@@ -384,9 +380,6 @@ export default function App() {
             {
               id: 'section-curve',
               label: '1% Trajectory Curve',
-              subtitle: 'Compounding Mathematical Momentum',
-              icon: TrendingUp,
-              branchName: 'Branch of Growth',
               component: (
                 <ProductivityCurve
                   tasks={tasks}
@@ -397,9 +390,6 @@ export default function App() {
             {
               id: 'section-sleep',
               label: 'Circadian Sleep',
-              subtitle: 'Sleep Architecture & Recovery Naps',
-              icon: Moon,
-              branchName: 'Bough of Rest',
               component: (
                 <SleepTracker
                   records={sleepRecords}
@@ -410,9 +400,6 @@ export default function App() {
             {
               id: 'section-accountability',
               label: 'Discipline Tribunal',
-              subtitle: 'Automated 2-Day Breach Warden',
-              icon: ShieldAlert,
-              branchName: 'Thorn of Accountability',
               component: (
                 <PunishmentsWidget
                   punishments={punishments}
