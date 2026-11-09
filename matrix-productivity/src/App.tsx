@@ -19,6 +19,7 @@ import { LandingHero } from './components/LandingHero';
 import { AuthGate } from './components/AuthGate';
 import { Navbar } from './components/Navbar';
 import { MouseAura } from './components/MouseAura';
+import { CosmicBackground } from './components/CosmicBackground';
 import { DailyQuoteBanner } from './components/DailyQuoteBanner';
 import { DailyReflectionBar } from './components/DailyReflectionBar';
 import { MonthlyScheduler } from './components/MonthlyScheduler';
@@ -77,6 +78,7 @@ export default function App() {
 
   // Active branch section
   const [activeSection, setActiveSection] = useState<string>('section-matrix');
+  const [landingRealm, setLandingRealm] = useState<string>('hero');
 
   // Modals
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
@@ -276,7 +278,8 @@ export default function App() {
   // 1. Landing View
   if (!user && !isGuest && viewMode === 'landing') {
     return (
-      <>
+      <div className="relative min-h-screen w-full bg-[var(--bg-app)] text-[var(--text-main)] overflow-x-hidden">
+        <CosmicBackground activeRealm={landingRealm} potatoMode={potatoMode} theme={theme} />
         <MouseAura enabled={!potatoMode} />
         <LandingHero
           isLight={theme === 'light'}
@@ -285,40 +288,46 @@ export default function App() {
             setIsGuest(true);
             setViewMode('app');
           }}
+          onRealmChange={setLandingRealm}
         />
-      </>
+      </div>
     );
   }
 
   // 2. Auth Gate View
   if (!user && !isGuest && viewMode === 'auth') {
     return (
-      <>
+      <div className="relative min-h-screen w-full bg-[var(--bg-app)] text-[var(--text-main)] overflow-x-hidden">
+        <CosmicBackground activeRealm="hero" potatoMode={potatoMode} theme={theme} />
         <MouseAura enabled={!potatoMode} />
         <AuthGate
           onAuthenticated={() => setViewMode('app')}
           onBackToLanding={() => setViewMode('landing')}
         />
-      </>
+      </div>
     );
   }
 
   // 3. Standalone Download / Backup Page
   if (viewMode === 'download') {
     return (
-      <>
+      <div className="relative min-h-screen w-full bg-[var(--bg-app)] text-[var(--text-main)] overflow-x-hidden">
+        <CosmicBackground activeRealm="hero" potatoMode={potatoMode} theme={theme} />
         <MouseAura enabled={!potatoMode} />
         <DownloadPage
           onBack={() => setViewMode('app')}
           onRefreshData={handleRefreshData}
         />
-      </>
+      </div>
     );
   }
 
   // 4. Horizontal Scrolling Deck Dashboard
   return (
-    <div className={`h-[100dvh] min-h-[100dvh] w-full max-w-full bg-[var(--bg-app)] text-[var(--text-main)] flex flex-col font-sans-app overflow-x-hidden transition-colors ${potatoMode ? 'potato-mode' : ''}`}>
+    <div className={`h-[100dvh] min-h-[100dvh] w-full max-w-full bg-[var(--bg-app)] text-[var(--text-main)] flex flex-col font-sans-app overflow-x-hidden transition-colors relative ${potatoMode ? 'potato-mode' : ''}`}>
+      {/* Dynamic Cosmic Starfield & Morphing Galaxy Background */}
+      <CosmicBackground activeRealm={activeSection} potatoMode={potatoMode} theme={theme} />
+
       {/* Interactive mouse ambient aura */}
       <MouseAura enabled={!potatoMode} />
 

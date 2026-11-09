@@ -23,11 +23,13 @@ interface LandingHeroProps {
   onGetStarted: () => void;
   onExploreOffline: () => void;
   isLight: boolean;
+  onRealmChange?: (realm: string) => void;
 }
 
 export const LandingHero: React.FC<LandingHeroProps> = ({
   onGetStarted,
   onExploreOffline,
+  onRealmChange,
 }) => {
   const [showComparison, setShowComparison] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -42,6 +44,39 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Track scroll position to update galaxy realm
+  useEffect(() => {
+    if (!onRealmChange) return;
+
+    const observers: IntersectionObserver[] = [];
+    const sections: { id: string; realm: string; threshold: number }[] = [
+      { id: 'landing-hero-section', realm: 'hero', threshold: 0.2 },
+      { id: 'landing-pillar-matrix', realm: 'section-matrix', threshold: 0.25 },
+      { id: 'landing-pillar-curve', realm: 'section-curve', threshold: 0.25 },
+      { id: 'landing-pillar-tribunal', realm: 'section-accountability', threshold: 0.25 },
+      { id: 'landing-pillar-sleep', realm: 'section-sleep', threshold: 0.25 },
+    ];
+
+    sections.forEach(({ id, realm, threshold }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              onRealmChange(realm);
+            }
+          });
+        },
+        { threshold }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+
+    return () => observers.forEach((o) => o.disconnect());
+  }, [onRealmChange]);
 
   // 1. Hero Scroll Parallax
   const heroContainerRef = useRef<HTMLDivElement>(null);
@@ -298,6 +333,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           PHASE 1: STICKY PARALLAX HERO WITH 3D SPECIMEN UNFOLD
       ───────────────────────────────────────────────────────────── */}
       <section
+        id="landing-hero-section"
         ref={heroContainerRef}
         className="relative pt-24 sm:pt-32 pb-16 px-4 sm:px-8 min-h-[140vh] sm:min-h-[160vh]"
       >
@@ -471,6 +507,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           {PILLARS.map((pillar, index) => (
             <div
               key={pillar.id}
+              id={`landing-pillar-${pillar.id}`}
               className="sticky top-24 sm:top-28 transition-transform"
               style={{
                 zIndex: index + 10,
