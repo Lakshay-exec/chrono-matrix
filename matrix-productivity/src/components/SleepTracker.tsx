@@ -6,18 +6,12 @@ import {
   Clock, 
   Calendar, 
   Activity, 
-  Link2, 
   Unlink, 
-  RefreshCw, 
-  Edit3, 
-  AlertCircle 
+  Edit3 
 } from 'lucide-react';
 import {
-  authenticateGoogleFit,
-  fetchLiveGoogleFitData,
   getStoredFitTelemetry,
   saveStoredFitTelemetry,
-  getStoredAccessToken,
   type GoogleFitTelemetry,
 } from '../services/googleFit';
 
@@ -48,13 +42,42 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ records, onSaveRecor
   const [napStart, setNapStart] = useState('13:00');
   const [napEnd, setNapEnd] = useState('13:30');
 
-  // Google Fit state
+  // Google Fit state & Community Vote
   const [fitData, setFitData] = useState<GoogleFitTelemetry | null>(() => getStoredFitTelemetry());
-  const [fitConnected, setFitConnected] = useState<boolean>(() => !!getStoredAccessToken() || !!getStoredFitTelemetry());
-  const [fitLoading, setFitLoading] = useState(false);
-  const [fitError, setFitError] = useState<string | null>(null);
   const [showManualInput, setShowManualInput] = useState(false);
   const [customSteps, setCustomSteps] = useState('');
+
+  // Google Fit feature vote state
+  const [fitVote, setFitVote] = useState<'needed' | 'not-needed' | null>(() => {
+    try {
+      return (localStorage.getItem('chrono_fit_feature_vote') as 'needed' | 'not-needed') || null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [fitVoteCounts, setFitVoteCounts] = useState<{ needed: number; notNeeded: number }>(() => {
+    try {
+      const saved = localStorage.getItem('chrono_fit_vote_counts');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return { needed: 312, notNeeded: 28 };
+  });
+
+  const handleVote = (choice: 'needed' | 'not-needed') => {
+    if (fitVote === choice) return;
+    const newCounts = { ...fitVoteCounts };
+    if (fitVote) {
+      newCounts[fitVote === 'needed' ? 'needed' : 'notNeeded'] = Math.max(0, newCounts[fitVote === 'needed' ? 'needed' : 'notNeeded'] - 1);
+    }
+    newCounts[choice === 'needed' ? 'needed' : 'notNeeded'] += 1;
+    setFitVote(choice);
+    setFitVoteCounts(newCounts);
+    try {
+      localStorage.setItem('chrono_fit_feature_vote', choice);
+      localStorage.setItem('chrono_fit_vote_counts', JSON.stringify(newCounts));
+    } catch {}
+  };
 
   const calcDuration = (bed: string, wake: string) => {
     const [bH, bM] = bed.split(':').map(Number);
@@ -88,54 +111,9 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ records, onSaveRecor
     setShowNapForm(false);
   };
 
-  const connectGoogleFit = async () => {
-    setFitLoading(true);
-    setFitError(null);
-    try {
-      const { accessToken, error } = await authenticateGoogleFit();
-      if (error || !accessToken) {
-        setFitError(error || 'Failed to authenticate Google Fit account.');
-        setFitLoading(false);
-        return;
-      }
-      setFitConnected(true);
-      const res = await fetchLiveGoogleFitData(accessToken);
-      if (res.error) {
-        setFitError(res.error);
-      }
-      if (res.data) {
-        setFitData(res.data);
-      }
-    } catch (err: any) {
-      setFitError(err?.message || 'Connection to Google Fit failed.');
-    } finally {
-      setFitLoading(false);
-    }
-  };
-
-  const refreshGoogleFit = async () => {
-    const token = getStoredAccessToken();
-    if (!token) {
-      connectGoogleFit();
-      return;
-    }
-    setFitLoading(true);
-    setFitError(null);
-    const res = await fetchLiveGoogleFitData(token);
-    if (res.error) {
-      setFitError(res.error);
-    }
-    if (res.data) {
-      setFitData(res.data);
-    }
-    setFitLoading(false);
-  };
-
   const disconnectGoogleFit = () => {
     saveStoredFitTelemetry(null);
-    setFitConnected(false);
     setFitData(null);
-    setFitError(null);
   };
 
   const handleManualStepsSave = (e?: React.FormEvent) => {
@@ -152,10 +130,8 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ records, onSaveRecor
     };
     saveStoredFitTelemetry(manualData);
     setFitData(manualData);
-    setFitConnected(true);
     setShowManualInput(false);
     setCustomSteps('');
-    setFitError(null);
   };
 
   // Stats
@@ -421,150 +397,145 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ records, onSaveRecor
           </form>
         </div>
 
-        {/* Google Fit Card */}
+        {/* Google Fit & Wearable Telemetry Card (Coming Soon + Community Vote) */}
         <div className="glass-card rounded-2xl p-4 sm:p-5 border border-current/[0.08] flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 opacity-70" />
-                <h3 className="text-base font-bold font-serif-app text-current">Google Fit Telemetry</h3>
+                <h3 className="text-base font-bold font-serif-app text-current">Google Fit & Wearables</h3>
               </div>
-              {fitConnected && fitData ? (
-                <div className="flex items-center gap-1.5 text-[10px] font-mono font-semibold">
-                  <span className={`w-1.5 h-1.5 rounded-full ${fitData.source === 'google-fit-api' ? 'bg-emerald-400 animate-pulse' : 'bg-cyan-400'}`} />
-                  <span className="opacity-75">
-                    {fitData.source === 'google-fit-api' ? 'Live API' : 'Calibrated'} · {fitData.lastSyncedAt}
-                  </span>
-                </div>
-              ) : (
-                <span className="text-[10px] font-mono opacity-40">Offline</span>
-              )}
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                Coming Soon
+              </span>
             </div>
 
-            {/* Error Banner */}
-            {fitError && (
-              <div className="mb-3 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[11px] font-mono flex items-start gap-2">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-400" />
-                <div className="leading-relaxed">
-                  <div>{fitError}</div>
-                  <div className="mt-1 opacity-70 text-[10px]">
-                    Tip: You can use the "Calibrate Steps" button below to input your exact count directly from your watch/phone.
+            {/* Voting Feature Poll */}
+            <div className="p-3.5 rounded-xl bg-current/[0.02] border border-current/[0.07] space-y-2.5 mb-3">
+              <div className="flex items-center justify-between text-[11px] font-mono">
+                <span className="opacity-75">Community Priority Poll:</span>
+                <span className="text-[10px] text-emerald-400 font-semibold">
+                  {Math.round((fitVoteCounts.needed / (fitVoteCounts.needed + fitVoteCounts.notNeeded)) * 100)}% want this
+                </span>
+              </div>
+              <p className="text-xs font-serif-app italic opacity-60 leading-relaxed">
+                Automated Google Fit and smartwatch telemetry sync is in development. Would you use this feature?
+              </p>
+
+              {/* Vote Buttons */}
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleVote('needed')}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-mono font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    fitVote === 'needed'
+                      ? 'btn-solid-invert shadow-md'
+                      : 'bg-current/[0.04] hover:bg-current/[0.08] border border-current/10'
+                  }`}
+                >
+                  <span>👍 Needed</span>
+                  <span className="text-[10px] opacity-60">({fitVoteCounts.needed})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleVote('not-needed')}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-mono font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    fitVote === 'not-needed'
+                      ? 'btn-solid-invert shadow-md'
+                      : 'bg-current/[0.04] hover:bg-current/[0.08] border border-current/10'
+                  }`}
+                >
+                  <span>👎 Not Needed</span>
+                  <span className="text-[10px] opacity-60">({fitVoteCounts.notNeeded})</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Daily Calibrated Steps / Manual Logging */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-mono opacity-70">
+                <span>Daily Calibrated Steps:</span>
+                {fitData ? (
+                  <span className="text-cyan-400 font-semibold">{fitData.lastSyncedAt}</span>
+                ) : (
+                  <span className="opacity-50">Not logged</span>
+                )}
+              </div>
+
+              {fitData ? (
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-2.5 rounded-xl bg-current/[0.02] border border-current/[0.06] text-center">
+                    <span className="block text-[10px] font-mono opacity-50 uppercase">Steps</span>
+                    <span className="text-base font-bold font-mono text-current">{fitData.steps.toLocaleString()}</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-current/[0.02] border border-current/[0.06] text-center">
+                    <span className="block text-[10px] font-mono opacity-50 uppercase">Active</span>
+                    <span className="text-base font-bold font-mono text-current">{fitData.activeMinutes}m</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-current/[0.02] border border-current/[0.06] text-center">
+                    <span className="block text-[10px] font-mono opacity-50 uppercase">Calories</span>
+                    <span className="text-base font-bold font-mono text-current">{fitData.calories.toLocaleString()}</span>
                   </div>
                 </div>
-              </div>
-            )}
+              ) : null}
 
-            {/* Metrics Display */}
-            {fitData ? (
-              <div className="grid grid-cols-3 gap-2 mb-3">
-                <div className="p-3 rounded-xl bg-current/[0.02] border border-current/[0.06] text-center">
-                  <span className="block text-[10px] font-mono opacity-50 uppercase">Steps</span>
-                  <span className="text-lg font-bold font-mono text-current">{fitData.steps.toLocaleString()}</span>
+              {/* Manual Input Drawer */}
+              {showManualInput ? (
+                <div className="p-3 rounded-xl bg-current/[0.03] border border-current/15 space-y-2 mt-2">
+                  <div className="text-[11px] font-mono opacity-80 flex items-center justify-between">
+                    <span>Log Daily Steps:</span>
+                    <span className="text-[10px] opacity-50">(From Watch / Phone)</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100000"
+                      placeholder="e.g. 7420"
+                      value={customSteps}
+                      onChange={(e) => setCustomSteps(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleManualStepsSave(); }}
+                      className="flex-1 bg-current/[0.03] border border-current/15 rounded-lg px-2.5 py-1 text-xs font-mono text-current focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleManualStepsSave()}
+                      className="px-3 py-1 rounded-lg btn-solid-invert text-xs font-mono font-medium cursor-pointer"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowManualInput(false)}
+                      className="px-2 py-1 rounded-lg border border-current/15 text-xs font-mono opacity-60 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-                <div className="p-3 rounded-xl bg-current/[0.02] border border-current/[0.06] text-center">
-                  <span className="block text-[10px] font-mono opacity-50 uppercase">Active Min</span>
-                  <span className="text-lg font-bold font-mono text-current">{fitData.activeMinutes}m</span>
-                </div>
-                <div className="p-3 rounded-xl bg-current/[0.02] border border-current/[0.06] text-center">
-                  <span className="block text-[10px] font-mono opacity-50 uppercase">Calories</span>
-                  <span className="text-lg font-bold font-mono text-current">{fitData.calories.toLocaleString()}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="p-3.5 rounded-xl bg-current/[0.02] border border-current/[0.05] text-xs font-mono opacity-60 text-center mb-3">
-                No active fitness telemetry. Connect your Google account or calibrate your daily steps manually.
-              </div>
-            )}
-
-            {/* Manual Calibration Input Drawer */}
-            {showManualInput && (
-              <div className="p-3 rounded-xl bg-current/[0.03] border border-current/15 mb-3 space-y-2">
-                <div className="text-[11px] font-mono opacity-80 flex items-center justify-between">
-                  <span>Enter Exact Daily Steps:</span>
-                  <span className="text-[10px] opacity-50">(From Google Fit / Watch)</span>
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    max="100000"
-                    placeholder="e.g. 7420"
-                    value={customSteps}
-                    onChange={(e) => setCustomSteps(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleManualStepsSave(); }}
-                    className="flex-1 bg-current/[0.03] border border-current/15 rounded-lg px-2.5 py-1 text-xs font-mono text-current focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleManualStepsSave()}
-                    className="px-3 py-1 rounded-lg btn-solid-invert text-xs font-mono font-medium cursor-pointer"
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowManualInput(false)}
-                    className="px-2 py-1 rounded-lg border border-current/15 text-xs font-mono opacity-60 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
+              ) : null}
+            </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-2 pt-2 border-t border-current/[0.06]">
-            {fitConnected ? (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={refreshGoogleFit}
-                  disabled={fitLoading}
-                  className="flex-1 py-1.5 rounded-xl btn-solid-invert text-xs font-mono font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                  title="Re-query Google Fit API"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${fitLoading ? 'animate-spin' : ''}`} />
-                  <span>{fitLoading ? 'Syncing...' : 'Live Sync'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowManualInput(!showManualInput)}
-                  className="px-3 py-1.5 rounded-xl border border-current/15 text-xs font-mono opacity-80 hover:opacity-100 transition-all flex items-center gap-1 cursor-pointer"
-                  title="Calibrate exact step count"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span>Calibrate</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={disconnectGoogleFit}
-                  className="p-2 rounded-xl border border-current/15 text-xs opacity-50 hover:opacity-100 hover:text-rose-400 transition-all cursor-pointer"
-                  title="Disconnect telemetry"
-                >
-                  <Unlink className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={connectGoogleFit}
-                  disabled={fitLoading}
-                  className="flex-1 py-2 rounded-xl btn-solid-invert text-xs font-mono font-medium transition-all btn-press flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  <Link2 className="w-3.5 h-3.5" />
-                  <span>{fitLoading ? 'Connecting...' : 'Connect Google Fit Account'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowManualInput(!showManualInput)}
-                  className="px-3 py-2 rounded-xl border border-current/15 text-xs font-mono opacity-70 hover:opacity-100 transition-all cursor-pointer"
-                  title="Direct Step Input"
-                >
-                  <span>Manual Input</span>
-                </button>
-              </div>
+          {/* Action Bar */}
+          <div className="pt-2 border-t border-current/[0.06] flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowManualInput(!showManualInput)}
+              className="flex-1 py-2 rounded-xl btn-solid-invert text-xs font-mono font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{fitData ? 'Update Step Count' : 'Log Steps Manually'}</span>
+            </button>
+            {fitData && (
+              <button
+                type="button"
+                onClick={disconnectGoogleFit}
+                className="p-2 rounded-xl border border-current/15 text-xs opacity-50 hover:opacity-100 hover:text-rose-400 transition-all cursor-pointer"
+                title="Clear logged steps"
+              >
+                <Unlink className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
         </div>
