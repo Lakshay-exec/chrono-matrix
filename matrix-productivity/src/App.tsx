@@ -359,6 +359,7 @@ export default function App() {
       <main className="flex-1 w-full min-h-0 flex flex-col overflow-hidden">
         <FluidDeck
           activeSection={activeSection}
+          onSectionChange={setActiveSection}
           modules={[
             {
               id: 'section-matrix',
