@@ -26,9 +26,14 @@ import { ProductivityCurve } from './components/ProductivityCurve';
 import { SleepTracker } from './components/SleepTracker';
 import { PunishmentsWidget } from './components/PunishmentsWidget';
 import { AddTaskModal } from './components/AddTaskModal';
+import { ResetConfirmModal } from './components/ResetConfirmModal';
 import { DownloadPage } from './components/DownloadPage';
 import { HorizontalSlide } from './components/HorizontalSlide';
-import { scanAndAutoAssignPunishments } from './services/accountability';
+import { 
+  scanAndAutoAssignPunishments, 
+  resetAccountabilityBaseline, 
+  pardonAllPunishments 
+} from './services/accountability';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -76,6 +81,14 @@ export default function App() {
 
   // Modals
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+
+  const handleConfirmFreshStart = () => {
+    resetAccountabilityBaseline();
+    const pardoned = pardonAllPunishments(punishments);
+    setPunishments(pardoned);
+    persist(tasks, sleepRecords, pardoned, journal);
+  };
 
   // Automatically scan and assign disciplinary sanctions for 2-day breaches (never for days before joining)
   useEffect(() => {
@@ -445,6 +458,7 @@ export default function App() {
             onAddTaskClick={() => setIsAddTaskOpen(true)}
             onDeleteTask={handleDeleteTask}
             onNavigateToTribunal={() => handleScrollToSection('section-accountability')}
+            onOpenResetModal={() => setIsResetModalOpen(true)}
             potatoMode={potatoMode}
           />
         </HorizontalSlide>
@@ -485,6 +499,7 @@ export default function App() {
           <PunishmentsWidget
             punishments={punishments}
             onMarkServed={handleMarkServed}
+            onOpenResetModal={() => setIsResetModalOpen(true)}
           />
         </HorizontalSlide>
       </main>
@@ -580,6 +595,14 @@ export default function App() {
           onAddTask={handleAddTask}
         />
       )}
+
+      {/* Fresh Start / Discipline Reset Confirmation Modal */}
+      <ResetConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirmReset={handleConfirmFreshStart}
+        activeStrikesCount={activeStrikesCount}
+      />
     </div>
   );
 }

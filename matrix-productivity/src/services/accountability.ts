@@ -44,6 +44,33 @@ export function getUserJoinedDate(): string {
   return joined;
 }
 
+/**
+ * Resets the accountability baseline to Today.
+ * Any past dates before today will be completely forgiven and ignored for future breaches.
+ */
+export function resetAccountabilityBaseline(): string {
+  const todayStr = formatDate(new Date());
+  localStorage.setItem(USER_JOINED_KEY, todayStr);
+  return todayStr;
+}
+
+/**
+ * Pardons all active/unserved punishments, marking them resolved.
+ */
+export function pardonAllPunishments(punishments: PunishmentRecord[]): PunishmentRecord[] {
+  const now = new Date().toISOString();
+  return punishments.map((p) =>
+    !p.served
+      ? {
+          ...p,
+          served: true,
+          servedAt: now,
+          punishmentText: `${p.punishmentText} (Pardoned via Fresh Start)`,
+        }
+      : p
+  );
+}
+
 export function getTaskEffectiveStartDate(task: Task): string {
   const userJoined = getUserJoinedDate();
   if (!task.createdAt) return userJoined;

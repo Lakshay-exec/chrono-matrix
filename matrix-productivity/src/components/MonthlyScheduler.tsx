@@ -12,7 +12,8 @@ import {
   Layers, 
   Lock,
   ShieldAlert,
-  X
+  X,
+  RotateCcw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { isDay2WarningActive, isTaskLocked } from '../services/accountability';
@@ -25,6 +26,7 @@ interface MonthlySchedulerProps {
   onAddTaskClick: () => void;
   onDeleteTask: (taskId: string) => void;
   onNavigateToTribunal?: () => void;
+  onOpenResetModal?: () => void;
   potatoMode: boolean;
 }
 
@@ -40,6 +42,7 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
   onAddTaskClick,
   onDeleteTask,
   onNavigateToTribunal,
+  onOpenResetModal,
   potatoMode,
 }) => {
   // Mobile / Desktop View Mode: 'week' (compact 7-day) or 'month' (full 30-day matrix)
@@ -650,13 +653,27 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
               "{lockedModal.penalty.punishmentText}"
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2 pt-2 flex-wrap">
               <button
                 onClick={() => setLockedModal({ isOpen: false, task: null, penalty: null })}
                 className="px-3 py-1.5 rounded-xl glass-card text-xs font-mono opacity-70 hover:opacity-100 transition-all cursor-pointer"
               >
                 Close
               </button>
+
+              {onOpenResetModal && (
+                <button
+                  onClick={() => {
+                    setLockedModal({ isOpen: false, task: null, penalty: null });
+                    onOpenResetModal();
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-mono font-medium hover:bg-amber-500/20 transition-all cursor-pointer flex items-center gap-1.5"
+                  title="Returned after a break? Pardon all penalties and restart fresh today"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Fresh Start Today</span>
+                </button>
+              )}
 
               {onNavigateToTribunal && (
                 <button

@@ -1,22 +1,24 @@
 import type { PunishmentRecord } from '../types';
-import { CheckCircle2, ShieldCheck, Lock } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, Lock, RotateCcw } from 'lucide-react';
 
 interface PunishmentsWidgetProps {
   punishments: PunishmentRecord[];
   onMarkServed: (id: string) => void;
+  onOpenResetModal?: () => void;
 }
 
 export const PunishmentsWidget: React.FC<PunishmentsWidgetProps> = ({
   punishments,
   onMarkServed,
+  onOpenResetModal,
 }) => {
   const pending = punishments.filter((p) => !p.served);
   const served = punishments.filter((p) => p.served);
 
   return (
     <div className="w-full space-y-4 page-enter">
-      {/* Header (No manual add button — purely automated disciplinary tribunal) */}
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold font-serif-app tracking-tight text-current">
             Accountability Tribunal
@@ -25,20 +27,43 @@ export const PunishmentsWidget: React.FC<PunishmentsWidgetProps> = ({
             Automatic disciplinary sanctions triggered upon 2-day ritual breaches
           </p>
         </div>
+
+        {/* Global Reset / Fresh Start Button */}
+        {onOpenResetModal && (
+          <button
+            onClick={onOpenResetModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-current/[0.04] hover:bg-current/[0.08] border border-current/[0.1] text-xs font-mono opacity-75 hover:opacity-100 transition-all cursor-pointer self-start sm:self-auto"
+            title="Returned after a break? Reset strikes and start fresh today"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Fresh Start / Reset</span>
+          </button>
+        )}
       </div>
 
       {/* Active Penalties */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono uppercase tracking-wider opacity-60">Active Strikes</span>
-          {pending.length > 0 ? (
-            <span className="px-2 py-0.5 rounded-md bg-rose-500/15 text-[10px] font-mono font-bold text-rose-400 border border-rose-500/25">
-              {pending.length} Ritual{pending.length > 1 ? 's' : ''} Frozen
-            </span>
-          ) : (
-            <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-[10px] font-mono font-bold text-emerald-400 border border-emerald-500/25">
-              All Clear
-            </span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono uppercase tracking-wider opacity-60">Active Strikes</span>
+            {pending.length > 0 ? (
+              <span className="px-2 py-0.5 rounded-md bg-rose-500/15 text-[10px] font-mono font-bold text-rose-400 border border-rose-500/25">
+                {pending.length} Ritual{pending.length > 1 ? 's' : ''} Frozen
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-[10px] font-mono font-bold text-emerald-400 border border-emerald-500/25">
+                All Clear
+              </span>
+            )}
+          </div>
+
+          {pending.length > 0 && onOpenResetModal && (
+            <button
+              onClick={onOpenResetModal}
+              className="text-[11px] font-mono text-amber-400 hover:underline cursor-pointer flex items-center gap-1"
+            >
+              <span>Too many strikes? Reset to today →</span>
+            </button>
           )}
         </div>
 
