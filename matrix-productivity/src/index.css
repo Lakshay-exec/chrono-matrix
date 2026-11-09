@@ -140,16 +140,26 @@ body {
   background: rgba(140, 140, 150, 0.4);
 }
 
-/* Custom Magnetic Ring Cursor: Desktop fine pointers */
+/* Custom Magnetic Ring Cursor: Desktop fine pointers only (not touch, not potato mode) */
 @media (hover: hover) and (pointer: fine) {
-  html:not(.potato-mode),
-  html:not(.potato-mode) body,
-  html:not(.potato-mode) button,
-  html:not(.potato-mode) a,
-  html:not(.potato-mode) input,
-  html:not(.potato-mode) select,
-  html:not(.potato-mode) textarea {
+  body,
+  button,
+  a,
+  input,
+  select,
+  textarea {
     cursor: none !important;
+  }
+
+  /* Restore normal cursor when potato mode is active (class lives on the root app div) */
+  .potato-mode,
+  .potato-mode *,
+  .potato-mode button,
+  .potato-mode a,
+  .potato-mode input,
+  .potato-mode select,
+  .potato-mode textarea {
+    cursor: auto !important;
   }
 }
 
