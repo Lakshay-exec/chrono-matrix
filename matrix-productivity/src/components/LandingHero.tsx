@@ -1,4 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  motion,
+  useScroll,
+  useTransform,
+  AnimatePresence,
+} from 'framer-motion';
 import {
   ArrowRight,
   HardDrive,
@@ -7,9 +13,10 @@ import {
   ChevronDown,
   Flame,
   TrendingUp,
-  Zap,
-  Shield,
-  Moon,
+  Sparkles,
+  Lock,
+  Activity,
+  Layers,
 } from 'lucide-react';
 
 interface LandingHeroProps {
@@ -18,61 +25,50 @@ interface LandingHeroProps {
   isLight: boolean;
 }
 
-// Hook: triggers animation class once element enters viewport
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.12 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return { ref, visible };
-}
-
-function RevealBlock({
-  children,
-  delay = 0,
-  className = '',
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  className?: string;
-}) {
-  const { ref, visible } = useReveal();
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0px)' : 'translateY(28px)',
-        transition: `opacity 0.72s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.72s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
 export const LandingHero: React.FC<LandingHeroProps> = ({
   onGetStarted,
   onExploreOffline,
 }) => {
   const [showComparison, setShowComparison] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check mobile viewport for GPU-safe transform reduction
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // 1. Hero Scroll Parallax
+  const heroContainerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: heroScroll } = useScroll({
+    target: heroContainerRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const heroTitleScale = useTransform(heroScroll, [0, 0.7], [1, isMobile ? 0.95 : 0.88]);
+  const heroTitleOpacity = useTransform(heroScroll, [0, 0.55], [1, 0.12]);
+  const heroTitleY = useTransform(heroScroll, [0, 0.7], [0, isMobile ? -30 : -60]);
+
+  // Mockup 3D tilt-to-flat animation
+  const mockupY = useTransform(heroScroll, [0, 0.7], [isMobile ? 30 : 90, 0]);
+  const mockupRotateX = useTransform(heroScroll, [0, 0.7], [isMobile ? 0 : 14, 0]);
+  const mockupScale = useTransform(heroScroll, [0, 0.7], [isMobile ? 0.98 : 0.92, 1]);
+  const mockupOpacity = useTransform(heroScroll, [0, 0.25], [0.8, 1]);
+
+  // Interactive sample state inside preview mockup
+  const [mockChecks, setMockChecks] = useState<boolean[]>([true, true, true, true, true, false, true]);
+  const toggleMockCheck = (index: number) => {
+    setMockChecks((prev) => {
+      const next = [...prev];
+      next[index] = !next[index];
+      return next;
+    });
+  };
 
   const toggleFaq = (idx: number) => {
     setOpenFaq(openFaq === idx ? null : idx);
@@ -80,395 +76,621 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
 
   const FAQS = [
     {
-      q: 'Is Chrono Matrix truly 100% free with zero subscriptions?',
-      a: 'Yes, completely. There are no paywalled features, in-app purchases, advertisements, or premium tiers. All core capabilities—including the 30-day matrix, 1% compounding curve, sleep telemetry, and automated tribunal—are unrestricted forever.',
+      q: 'Is Chrono Matrix truly 100% free with zero paywalls?',
+      a: 'Yes, permanently. There are no paid subscriptions, locked premium tiers, ads, or data tracking. All core engines—the 30-day matrix, 1% compounding curve, sleep telemetry, and automated disciplinary tribunal—are fully unlocked forever.',
     },
     {
       q: 'How does the 1% Compounding Curve mathematically work?',
-      a: "Inspired by James Clear's atomic compounding principle (1.01^365 = 37.78 vs 0.99^365 = 0.03), Chrono Matrix plots your daily executed habits against missed commitments. Every completed ritual compounds your momentum score upward, while inactive days decelerate your curve toward baseline.",
+      a: "Rooted in James Clear's atomic habits theorem (1.01^365 = 37.78 vs 0.99^365 = 0.03), Chrono Matrix plots your executed daily rituals against missed commitments. Every checkmark compounds your momentum score upward; skipped days decelerate your trajectory toward baseline.",
     },
     {
       q: 'What is the 2-Day Breach Disciplinary Tribunal?',
-      a: "The golden rule of elite consistency is 'never miss twice'. If you miss a ritual on Day 1, a Day 2 warning appears. If you fail to complete it on Day 2, the ritual is frozen and the automated Tribunal assigns a strict stoic penalty that must be served before that ritual unlocks.",
+      a: "The golden rule of peak performance is 'Never miss twice'. Missing a habit on Day 1 raises a yellow warning. Failing to complete it on Day 2 locks the ritual until a stoic accountability penalty (e.g. cold plunge, 50 pushups, 24h digital detox) is completed and marked served.",
     },
     {
-      q: 'Can I use Chrono Matrix offline without an account?',
-      a: "Yes. Chrono Matrix is an air-gapped Progressive Web App (PWA) with local-first storage. You can click 'Try Offline Guest Mode' to track habits, sleep, and journals immediately with 100% data persistence on your device without signing in.",
+      q: 'Can I use Chrono Matrix offline without creating an account?',
+      a: "Yes. Chrono Matrix is an air-gapped Progressive Web App (PWA) built with local-first architecture. Click 'Try Offline Guest Mode' to use every single feature with zero latency. Data is saved directly to your device storage.",
     },
     {
-      q: 'How does Chrono Matrix compare to Notion, Habitica, or Streaks?',
-      a: 'Unlike Notion (which requires complex database setup) or Habitica (bloated with cartoon gamification), Chrono Matrix is built on luxury monochrome minimalism. Instant 1-tap logging, offline speed, real mathematical curve analytics, and strict accountability.',
+      q: 'How does Chrono Matrix compare to Notion or Habitica?',
+      a: 'Unlike Notion (which suffers from laggy database renders and formula bloat) or Habitica (cartoonish game mechanics), Chrono Matrix is designed as a luxury monochrome instrument with instantaneous 1-tap logging, mathematical rigor, and real accountability.',
     },
   ];
 
-  const FEATURES = [
+  // The 4 Stacked Pillar Cards
+  const PILLARS = [
     {
-      icon: Zap,
-      label: '01 / Execution',
-      title: '1-Tap Consistency',
-      desc: 'Clean daily grid. Instant local persistence and cloud sync with zero friction.',
+      id: 'matrix',
+      num: '01',
+      tag: 'DAILY EXECUTION',
+      title: 'The 30-Day Ritual Matrix',
+      desc: 'High-contrast monochrome habit grid. One-tap execution with zero friction, zero loading delay, and automatic streak calculation.',
+      color: 'from-cyan-500/20 to-blue-500/5',
+      accentColor: 'text-cyan-400',
+      badgeColor: 'border-cyan-500/30 text-cyan-300',
+      component: (
+        <div className="space-y-3 font-mono text-xs mt-2">
+          <div className="flex items-center justify-between pb-2 border-b border-current/10">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              <span className="font-semibold text-current">Deep Focus Session</span>
+            </div>
+            <span className="text-[10px] opacity-60">Target: 90m daily</span>
+          </div>
+          <div className="flex items-center justify-between gap-1 sm:gap-2">
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <span className="text-[10px] opacity-40">{day}</span>
+                <div
+                  className={`w-full aspect-square max-w-[36px] max-h-[36px] rounded-lg flex items-center justify-center transition-all ${
+                    i < 6
+                      ? 'bg-white text-black font-bold shadow-md shadow-white/10 scale-100'
+                      : 'border border-dashed border-current/30 text-current/40'
+                  }`}
+                >
+                  {i < 6 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : '·'}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-between text-[11px] opacity-75 pt-1">
+            <span className="flex items-center gap-1.5 text-amber-400 font-semibold">
+              <Flame className="w-3.5 h-3.5 fill-amber-400" /> 14-Day Unbroken Streak
+            </span>
+            <span className="text-emerald-400 font-semibold">85.7% Velocity</span>
+          </div>
+        </div>
+      ),
     },
     {
-      icon: TrendingUp,
-      label: '02 / Momentum',
-      title: '1% Mathematical Curve',
-      desc: 'Atomic compounding trajectory. Executed habits compound upward; missed sessions decelerate.',
+      id: 'curve',
+      num: '02',
+      tag: 'MATHEMATICAL MOMENTUM',
+      title: 'The 1% Compounding Trajectory',
+      desc: 'Watch atomic habit compounding unfold in real-time. Calculated dynamically via differential habit weightings: (1.01)³⁶⁵ = 37.78×.',
+      color: 'from-emerald-500/20 to-teal-500/5',
+      accentColor: 'text-emerald-400',
+      badgeColor: 'border-emerald-500/30 text-emerald-300',
+      component: (
+        <div className="space-y-3 font-mono text-xs mt-2">
+          {/* Mini Vector Curve Preview */}
+          <div className="relative h-28 w-full rounded-xl bg-current/[0.02] border border-current/10 p-3 flex flex-col justify-between overflow-hidden">
+            <div className="flex items-center justify-between text-[10px] opacity-50 z-10">
+              <span>Day 1 (Baseline: 1.00×)</span>
+              <span className="text-emerald-400 font-bold">Day 365 (Apex: 37.78×)</span>
+            </div>
+            {/* SVG Visual Curve */}
+            <svg className="absolute inset-0 w-full h-full p-2 overflow-visible" preserveAspectRatio="none" viewBox="0 0 300 100">
+              <defs>
+                <linearGradient id="curveGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M 10 85 Q 120 80, 200 45 T 290 12 L 290 95 L 10 95 Z"
+                fill="url(#curveGradient)"
+              />
+              <path
+                d="M 10 85 Q 120 80, 200 45 T 290 12"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              {/* Exponential Dot */}
+              <circle cx="290" cy="12" r="4" fill="#10b981" className="animate-ping opacity-75" />
+              <circle cx="290" cy="12" r="3" fill="#ffffff" />
+            </svg>
+            <div className="flex items-center justify-between text-[11px] z-10 pt-4">
+              <span className="text-emerald-400 font-bold flex items-center gap-1">
+                <TrendingUp className="w-3.5 h-3.5" /> +3,678% Compounded Gain
+              </span>
+              <span className="opacity-40">Zero Degeneration</span>
+            </div>
+          </div>
+        </div>
+      ),
     },
     {
-      icon: Shield,
-      label: '03 / Discipline',
-      title: 'AI Accountability Tribunal',
-      desc: 'Never miss twice. A 2-day breach automatically locks rituals until a disciplinary penalty is completed.',
+      id: 'tribunal',
+      num: '03',
+      tag: 'DISCIPLINARY SANCTION',
+      title: 'Automated 2-Day Breach Tribunal',
+      desc: 'Strict accountability with zero excuses. If you miss a commitment two days in a row, the automated tribunal locks your matrix until you serve a designated stoic sanction.',
+      color: 'from-rose-500/20 to-orange-500/5',
+      accentColor: 'text-rose-400',
+      badgeColor: 'border-rose-500/30 text-rose-300',
+      component: (
+        <div className="space-y-3 font-mono text-xs mt-2">
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-rose-400 font-bold">
+                <Lock className="w-3.5 h-3.5" />
+                <span>SANCTION MANDATE ACTIVE</span>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[10px] bg-rose-500/20 text-rose-300 font-semibold">
+                BREACH LEVEL II
+              </span>
+            </div>
+            <p className="text-[11px] opacity-80 leading-relaxed font-serif-app italic text-rose-100">
+              "Morning Cardio & Breathwork missed for 48 consecutive hours. Matrix ritual frozen."
+            </p>
+            <div className="flex items-center justify-between pt-1 border-t border-rose-500/20 text-[10px]">
+              <span className="opacity-70">Sanction: 45m Digital Blackout + 30 Burpees</span>
+              <span className="text-rose-400 font-semibold underline cursor-pointer">Serve to Unlock →</span>
+            </div>
+          </div>
+        </div>
+      ),
     },
     {
-      icon: Moon,
-      label: '04 / Recovery',
-      title: 'Circadian Sleep Telemetry',
-      desc: 'Log sleep, track patterns, visualize your circadian consistency week over week.',
+      id: 'sleep',
+      num: '04',
+      tag: 'CIRCADIAN TELEMETRY',
+      title: 'Circadian Sleep & Recovery Engine',
+      desc: 'Precision sleep latency and circadian alignment tracking. Directly correlative telemetry linking your sleep quality to habit completion velocity.',
+      color: 'from-indigo-500/20 to-purple-500/5',
+      accentColor: 'text-indigo-400',
+      badgeColor: 'border-indigo-500/30 text-indigo-300',
+      component: (
+        <div className="space-y-3 font-mono text-xs mt-2">
+          <div className="p-3 rounded-xl bg-current/[0.02] border border-current/10 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="opacity-60">Last Night: 23:15 — 07:05</span>
+              <span className="text-indigo-400 font-bold">7h 50m (96% Efficiency)</span>
+            </div>
+            {/* Visual sleep architecture bar */}
+            <div className="w-full h-3 rounded-full bg-current/10 flex overflow-hidden">
+              <div className="h-full bg-indigo-500 w-[22%]" title="Deep Sleep (22%)" />
+              <div className="h-full bg-blue-400 w-[53%]" title="Core Sleep (53%)" />
+              <div className="h-full bg-purple-400 w-[25%]" title="REM Sleep (25%)" />
+            </div>
+            <div className="flex items-center justify-between text-[10px] opacity-50 pt-1">
+              <span>Deep: 1h 44m</span>
+              <span>Core: 4h 08m</span>
+              <span>REM: 1h 58m</span>
+            </div>
+          </div>
+        </div>
+      ),
     },
   ];
 
   return (
-    <div
-      className="w-full min-h-screen flex flex-col bg-[var(--bg-app)] text-[var(--text-main)] font-sans-app overflow-x-hidden"
-      style={{ WebkitOverflowScrolling: 'touch' }}
-    >
-      {/* ── HERO ─────────────────────────────────────────────── */}
-      <section className="relative flex flex-col items-center justify-center min-h-screen px-4 sm:px-8 text-center overflow-hidden">
-        {/* Ambient background glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div
-            className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-            style={{
-              width: 'min(680px, 90vw)',
-              height: 'min(680px, 90vw)',
-              background: 'radial-gradient(circle, rgba(255,255,255,0.028) 0%, transparent 70%)',
-              filter: 'blur(60px)',
-            }}
-          />
-        </div>
-
-        {/* Top bar */}
-        <header className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 lg:px-12 py-5 z-20">
-          <div className="flex items-center gap-2.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
-            <span className="text-xs font-semibold tracking-widest uppercase font-mono opacity-90">
+    <div className="min-h-screen w-full bg-[var(--bg-app)] text-[var(--text-main)] font-sans-app selection:bg-white selection:text-black overflow-x-hidden">
+      
+      {/* ─────────────────────────────────────────────────────────────
+          TOP BRAND HUD & NAVIGATION
+      ───────────────────────────────────────────────────────────── */}
+      <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 py-3.5 backdrop-blur-xl bg-[var(--bg-app)]/80 border-b border-current/[0.07] transition-all">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 beacon-pulse" />
+            <span className="text-xs sm:text-sm font-semibold tracking-widest uppercase font-mono">
               CHRONO MATRIX
             </span>
-          </div>
-          <button
-            onClick={onGetStarted}
-            className="text-xs font-mono uppercase tracking-wider px-3.5 py-1.5 rounded-full border border-current/15 hover:bg-current/10 transition-all btn-press cursor-pointer"
-          >
-            Sign In →
-          </button>
-        </header>
-
-        {/* Hero content — staggered fade-in on mount */}
-        <div className="relative z-10 max-w-3xl mx-auto space-y-7 pt-20 pb-12">
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card text-[11px] font-mono tracking-widest uppercase opacity-80"
-            style={{ animation: 'fadeSlideIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both' }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse" />
-            Minimalist Discipline Matrix
-          </div>
-
-          <h1
-            className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.06]"
-            style={{ animation: 'fadeSlideIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.22s both' }}
-          >
-            One percent better,
-            <br />
-            <span className="font-serif-app italic font-normal opacity-90">
-              every single day.
+            <span className="hidden sm:inline-block px-2 py-0.5 rounded-full border border-current/15 text-[10px] font-mono opacity-50">
+              v2.4 AIR-GAPPED
             </span>
-          </h1>
+          </div>
 
-          <p
-            className="max-w-lg mx-auto text-sm sm:text-base font-serif-app italic opacity-60 leading-relaxed"
-            style={{ animation: 'fadeSlideIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.36s both' }}
-          >
-            A minimalist monochrome habit matrix engineered for relentless consistency.
-            Zero friction, zero distraction, pure execution.
-          </p>
-
-          <div
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full max-w-xs sm:max-w-none mx-auto"
-            style={{ animation: 'fadeSlideIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.48s both' }}
-          >
-            <button
-              onClick={onGetStarted}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-full btn-solid-invert font-semibold text-xs sm:text-sm tracking-wide transition-all shadow-xl flex items-center justify-center gap-2.5 btn-press cursor-pointer"
-            >
-              <span>Start Tracking</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+          <div className="flex items-center gap-2.5">
             <button
               onClick={onExploreOffline}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-full glass-card hover:bg-current/[0.05] transition-all text-xs font-mono tracking-wider uppercase opacity-80 hover:opacity-100 flex items-center justify-center gap-2 btn-press cursor-pointer"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono opacity-70 hover:opacity-100 hover:bg-current/5 transition-all cursor-pointer"
             >
               <HardDrive className="w-3.5 h-3.5" />
-              <span>Try Offline Guest Mode</span>
+              <span>Guest Mode</span>
+            </button>
+            <button
+              onClick={onGetStarted}
+              className="px-4 py-1.5 rounded-full btn-solid-invert text-xs font-semibold tracking-wide transition-all shadow-md flex items-center gap-1.5 btn-press cursor-pointer"
+            >
+              <span>Launch Matrix</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Scroll hint */}
-        <div
-          className="absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30"
-          style={{ animation: 'fadeSlideIn 1s cubic-bezier(0.16,1,0.3,1) 1.1s both' }}
-        >
-          <span className="text-[10px] font-mono tracking-widest uppercase">Scroll</span>
-          <div className="w-px h-10 bg-current/40 scroll-line" />
-        </div>
-      </section>
-
-      {/* ── PRODUCT PREVIEW ──────────────────────────────────── */}
-      <section className="px-4 sm:px-8 lg:px-12 py-16 sm:py-24">
-        <div className="max-w-3xl mx-auto">
-          <RevealBlock className="glass-card rounded-3xl p-4 sm:p-7 border border-current/[0.1] shadow-2xl">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-current/[0.07] text-xs font-mono">
-              <div className="flex items-center gap-2 opacity-60">
-                <span className="w-2 h-2 rounded-full bg-current opacity-60" />
-                <span>Oct 26 — Nov 1</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-amber-500 font-bold flex items-center gap-1">
-                  <Flame className="w-3 h-3 fill-amber-500" />
-                  14d Streak
-                </span>
-                <span className="text-[10px] opacity-40">·</span>
-                <span className="text-[10px] text-emerald-400 font-bold">94% Done</span>
-              </div>
+      {/* ─────────────────────────────────────────────────────────────
+          PHASE 1: STICKY PARALLAX HERO WITH 3D SPECIMEN UNFOLD
+      ───────────────────────────────────────────────────────────── */}
+      <section
+        ref={heroContainerRef}
+        className="relative pt-24 sm:pt-32 pb-16 px-4 sm:px-8 min-h-[140vh] sm:min-h-[160vh]"
+      >
+        {/* Pinned Sticky Content */}
+        <div className="sticky top-20 sm:top-28 flex flex-col items-center justify-center max-w-5xl mx-auto text-center">
+          
+          {/* Animated Hero Narrative */}
+          <motion.div
+            style={{
+              scale: heroTitleScale,
+              opacity: heroTitleOpacity,
+              y: heroTitleY,
+            }}
+            className="space-y-5 max-w-3xl mx-auto px-2"
+          >
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-card text-[11px] font-mono tracking-widest uppercase opacity-80">
+              <Sparkles className="w-3 h-3 text-emerald-400" />
+              <span>THE MONOCHROME HABIT ARCHITECTURE</span>
             </div>
 
-            {/* Matrix mockup rows */}
-            <div className="space-y-2 font-mono text-xs">
-              {[
-                { color: 'bg-cyan-400', name: 'Deep Focus Work', tag: 'Focus', days: [1, 1, 1, 1, 1, 1, 1] },
-                { color: 'bg-emerald-400', name: 'Physical Resistance', tag: 'Fitness', days: [1, 1, 1, 1, 1, 0, 1] },
-                { color: 'bg-purple-400', name: 'Evening Stoic Reflection', tag: 'Mind', days: [1, 1, 1, 1, 1, 1, 1] },
-              ].map((row) => (
-                <div
-                  key={row.name}
-                  className="flex items-center justify-between p-2.5 rounded-2xl bg-current/[0.02] border border-current/[0.05]"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-2 h-2 rounded-full ${row.color} shrink-0`} />
-                    <span className="font-semibold text-current text-xs truncate">{row.name}</span>
-                    <span className="text-[10px] opacity-40 hidden sm:inline">{row.tag}</span>
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.05]">
+              One percent better,
+              <br />
+              <span className="font-serif-app italic font-normal opacity-90">
+                every single day.
+              </span>
+            </h1>
+
+            <p className="max-w-xl mx-auto text-sm sm:text-base font-serif-app italic opacity-65 leading-relaxed">
+              An air-gapped productivity apparatus engineered for relentless execution.
+              Zero gamified distractions, zero cloud latency, mathematically compounded consistency.
+            </p>
+
+            {/* Hero Action Trigger */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3 max-w-sm sm:max-w-none mx-auto">
+              <button
+                onClick={onGetStarted}
+                className="w-full sm:w-auto px-7 py-3.5 rounded-full btn-solid-invert font-semibold text-xs sm:text-sm tracking-wide transition-all shadow-2xl flex items-center justify-center gap-2.5 btn-press cursor-pointer"
+              >
+                <span>Initialize Tracker</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={onExploreOffline}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-full glass-card hover:bg-current/[0.05] transition-all text-xs font-mono tracking-wider uppercase opacity-80 hover:opacity-100 flex items-center justify-center gap-2 btn-press cursor-pointer"
+              >
+                <HardDrive className="w-3.5 h-3.5" />
+                <span>1-Tap Offline Guest Mode</span>
+              </button>
+            </div>
+          </motion.div>
+
+          {/* 3D Angled Interactive Specimen Deck Mockup (Un-tilts dynamically on scroll) */}
+          <motion.div
+            style={{
+              y: mockupY,
+              rotateX: mockupRotateX,
+              scale: mockupScale,
+              opacity: mockupOpacity,
+              transformPerspective: 1200,
+            }}
+            className="w-full max-w-4xl mt-10 sm:mt-12 px-2"
+          >
+            <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-7 border border-current/15 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] relative overflow-hidden backdrop-blur-2xl">
+              
+              {/* Device Window Top Bar */}
+              <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-current/10 text-xs font-mono">
+                <div className="flex items-center gap-2 opacity-70">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500/70" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
+                  </div>
+                  <span className="ml-2 font-semibold tracking-wider text-[11px] uppercase">
+                    CHRONO MATRIX · PROTOCOL V2
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px]">
+                  <span className="text-amber-400 font-bold flex items-center gap-1">
+                    <Flame className="w-3 h-3 fill-amber-400" /> 14d Active Streak
+                  </span>
+                  <span className="opacity-30">|</span>
+                  <span className="text-emerald-400 font-bold">100% Zero-Cloud Storage</span>
+                </div>
+              </div>
+
+              {/* Live Interactive Specimen Table Mockup */}
+              <div className="space-y-2 text-left font-mono">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-current/[0.03] border border-current/[0.07] hover:border-current/20 transition-all">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-2 h-2 rounded-full bg-cyan-400 shrink-0" />
+                    <div>
+                      <div className="font-semibold text-xs truncate">Deep Cognitive Sprint (90m)</div>
+                      <div className="text-[10px] opacity-40">Ritual Class: High Leverage</div>
+                    </div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    {row.days.map((done, i) => (
+                    {mockChecks.map((checked, i) => (
+                      <button
+                        key={i}
+                        onClick={() => toggleMockCheck(i)}
+                        title={`Toggle Day ${i + 1}`}
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                          checked
+                            ? 'bg-white text-black font-bold shadow-md shadow-white/20 scale-105'
+                            : 'border border-current/20 text-transparent hover:border-current/50'
+                        }`}
+                      >
+                        {checked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-xl bg-current/[0.03] border border-current/[0.07]">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                    <div>
+                      <div className="font-semibold text-xs truncate">Cardiovascular / Heavy Compound Lift</div>
+                      <div className="text-[10px] opacity-40">Ritual Class: Biological Foundation</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {[true, true, true, true, true, true, false].map((c, i) => (
                       <div
                         key={i}
-                        className={`w-6 h-6 rounded-lg flex items-center justify-center ${done ? 'cell-checked' : 'cell-unchecked'}`}
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                          c ? 'bg-white text-black font-bold shadow-md shadow-white/10' : 'border border-current/20 text-current/30'
+                        }`}
                       >
-                        {done ? <Check className="w-3 h-3" /> : null}
+                        {c ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : '·'}
                       </div>
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            {/* Footer */}
-            <div className="mt-4 pt-3 border-t border-current/[0.07] flex items-center justify-between text-[11px] font-mono opacity-70">
-              <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                <TrendingUp className="w-3.5 h-3.5" />
-                (1.01)³⁶⁵ = 37.8× Compounding Law
-              </span>
-              <span className="hidden sm:inline opacity-50">Local-First · Zero Lag</span>
+              {/* Bottom Telemetry Footer */}
+              <div className="mt-4 pt-3.5 border-t border-current/10 flex items-center justify-between text-[11px] font-mono opacity-70">
+                <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                  <Activity className="w-3.5 h-3.5" />
+                  Momentum Coefficient: 1.01^365 = 37.8× Exponential
+                </span>
+                <span className="hidden sm:inline opacity-50">Click squares to test 1-tap physics</span>
+              </div>
             </div>
-          </RevealBlock>
+          </motion.div>
         </div>
       </section>
 
-      {/* ── FEATURES GRID ────────────────────────────────────── */}
-      <section className="px-4 sm:px-8 lg:px-12 py-12 sm:py-20 border-t border-current/[0.07]">
-        <div className="max-w-4xl mx-auto">
-          <RevealBlock className="text-center mb-10 sm:mb-16 space-y-3">
-            <span className="text-[11px] font-mono uppercase tracking-widest opacity-40">
-              The System
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">
-              Everything you need.
-              <br />
-              <span className="font-serif-app italic font-normal opacity-80">
-                Nothing you don't.
-              </span>
-            </h2>
-          </RevealBlock>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
-            {FEATURES.map((f, i) => {
-              const Icon = f.icon;
-              return (
-                <RevealBlock key={f.title} delay={i * 90}>
-                  <div className="glass-card rounded-2xl p-5 border border-current/[0.08] hover:border-current/[0.15] transition-all group">
-                    <div className="flex items-start gap-4">
-                      <div className="w-9 h-9 rounded-xl bg-current/[0.06] flex items-center justify-center shrink-0 group-hover:bg-current/[0.1] transition-colors">
-                        <Icon className="w-4 h-4 opacity-80" />
-                      </div>
-                      <div className="space-y-1 min-w-0">
-                        <span className="text-[10px] font-mono opacity-40 uppercase">{f.label}</span>
-                        <h3 className="text-sm font-semibold">{f.title}</h3>
-                        <p className="text-xs opacity-60 leading-relaxed font-serif-app italic">{f.desc}</p>
-                      </div>
-                    </div>
-                  </div>
-                </RevealBlock>
-              );
-            })}
+      {/* ─────────────────────────────────────────────────────────────
+          PHASE 2: THE 4 PILLARS STICKY STACKING DECK
+          (Silky, high-end scroll animation that stacks natively on mobile)
+      ───────────────────────────────────────────────────────────── */}
+      <section className="relative px-4 sm:px-8 py-20 max-w-5xl mx-auto">
+        <div className="text-center space-y-3 mb-14">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-current/15 text-[10px] font-mono tracking-widest uppercase opacity-70">
+            <Layers className="w-3 h-3 text-cyan-400" />
+            <span>ARCHITECTURAL SYSTEMS</span>
           </div>
+          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">
+            Designed for unyielding consistency.
+          </h2>
+          <p className="max-w-xl mx-auto text-sm opacity-60 font-serif-app italic">
+            Scroll through the four foundational pillars that separate Chrono Matrix from conventional habit trackers.
+          </p>
         </div>
-      </section>
 
-      {/* ── STAT ROW ─────────────────────────────────────────── */}
-      <section className="px-4 sm:px-8 lg:px-12 py-12 sm:py-20 border-t border-current/[0.07]">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-10 text-center">
-          {[
-            { val: '100%', label: 'Free forever' },
-            { val: '37.8×', label: 'Growth in 1 year' },
-            { val: '0ms', label: 'Offline load time' },
-            { val: '∞', label: 'No paywalls' },
-          ].map((s, i) => (
-            <RevealBlock key={s.label} delay={i * 80} className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-bold tracking-tight">{s.val}</div>
-              <div className="text-[11px] font-mono uppercase tracking-wider opacity-40">{s.label}</div>
-            </RevealBlock>
+        {/* The Stacking Deck Cards */}
+        <div className="space-y-8 sm:space-y-12">
+          {PILLARS.map((pillar, index) => (
+            <div
+              key={pillar.id}
+              className="sticky top-24 sm:top-28 transition-transform"
+              style={{
+                zIndex: index + 10,
+              }}
+            >
+              <div
+                className={`glass-card rounded-3xl p-6 sm:p-9 border border-current/15 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.8)] backdrop-blur-2xl bg-gradient-to-br ${pillar.color} relative overflow-hidden`}
+              >
+                {/* Header Tag and Number */}
+                <div className="flex items-center justify-between pb-4 border-b border-current/10">
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider border ${pillar.badgeColor}`}>
+                    {pillar.tag}
+                  </span>
+                  <span className="text-2xl sm:text-3xl font-mono font-bold opacity-30">
+                    {pillar.num}
+                  </span>
+                </div>
+
+                {/* Content Body */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center mt-5">
+                  <div className="space-y-3">
+                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-current">
+                      {pillar.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm opacity-70 leading-relaxed font-serif-app italic">
+                      {pillar.desc}
+                    </p>
+                  </div>
+                  
+                  {/* Live Interactive Specimen Preview */}
+                  <div className="w-full">
+                    {pillar.component}
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* ── SPECS / FAQ (collapsed) ───────────────────────────── */}
-      <section className="px-4 sm:px-8 lg:px-12 py-10 border-t border-current/[0.07]">
-        <div className="max-w-4xl mx-auto space-y-8">
+      {/* ─────────────────────────────────────────────────────────────
+          PHASE 3: THE COMPOUNDING CALCULUS METRICS
+      ───────────────────────────────────────────────────────────── */}
+      <section className="px-4 sm:px-8 py-20 border-t border-current/10">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center font-mono">
+            <div className="p-5 rounded-2xl glass-card border border-current/10 space-y-1">
+              <div className="text-3xl sm:text-4xl font-bold text-emerald-400 tracking-tight">37.78×</div>
+              <div className="text-[10px] uppercase opacity-50 tracking-wider">Annual 1% Growth</div>
+            </div>
+            <div className="p-5 rounded-2xl glass-card border border-current/10 space-y-1">
+              <div className="text-3xl sm:text-4xl font-bold text-current tracking-tight">0 ms</div>
+              <div className="text-[10px] uppercase opacity-50 tracking-wider">Offline Latency</div>
+            </div>
+            <div className="p-5 rounded-2xl glass-card border border-current/10 space-y-1">
+              <div className="text-3xl sm:text-4xl font-bold text-cyan-400 tracking-tight">100%</div>
+              <div className="text-[10px] uppercase opacity-50 tracking-wider">Free Forever</div>
+            </div>
+            <div className="p-5 rounded-2xl glass-card border border-current/10 space-y-1">
+              <div className="text-3xl sm:text-4xl font-bold text-purple-400 tracking-tight">Zero</div>
+              <div className="text-[10px] uppercase opacity-50 tracking-wider">Cloud Dependencies</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          PHASE 4: COLLAPSIBLE SYSTEM SPECS & COMPARISON TABLE
+      ───────────────────────────────────────────────────────────── */}
+      <section className="px-4 sm:px-8 py-12 border-t border-current/10">
+        <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center justify-center">
             <button
               onClick={() => setShowComparison(!showComparison)}
-              className="text-xs font-mono opacity-60 hover:opacity-100 px-4 py-2 rounded-full glass-card transition-all flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-mono opacity-70 hover:opacity-100 px-5 py-2.5 rounded-full glass-card transition-all flex items-center gap-2 cursor-pointer shadow-md"
             >
-              <span>{showComparison ? 'Hide' : 'View'} System Specs vs Other Trackers</span>
+              <span>{showComparison ? 'Collapse' : 'Inspect'} Full System Specs vs Competitors</span>
               <ChevronDown
                 className={`w-3.5 h-3.5 transition-transform duration-300 ${showComparison ? 'rotate-180' : ''}`}
               />
             </button>
           </div>
 
-          {showComparison && (
-            <div className="space-y-8 page-enter">
-              {/* Comparison Table */}
-              <div className="glass-card rounded-2xl overflow-x-auto border border-current/[0.09]">
-                <table className="w-full text-left text-xs font-mono min-w-[500px]">
-                  <thead>
-                    <tr className="border-b border-current/[0.08] bg-current/[0.02]">
-                      <th className="py-3 px-4 opacity-60">Capabilities</th>
-                      <th className="py-3 px-4 font-bold bg-current/[0.04]">Chrono Matrix</th>
-                      <th className="py-3 px-4 opacity-60">Notion</th>
-                      <th className="py-3 px-4 opacity-60">Habitica</th>
-                      <th className="py-3 px-4 opacity-60">Streaks</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-current/[0.06]">
-                    {[
-                      ['100% Free / Zero Paywalls', 'Free Forever', 'Free / $10/mo', '$5/mo sub', '$5.99 paid'],
-                      ['1% Compounding Curve', 'Built-in Math', null, null, null],
-                      ['Auto 2-Day Breach Lock', 'Automated', null, 'Health loss', null],
-                      ['Offline Local-First PWA', '1-Click Guest', null, null, 'iOS only'],
-                    ].map(([cap, cm, n, h, s]) => (
-                      <tr key={cap as string}>
-                        <td className="py-2.5 px-4 font-semibold">{cap}</td>
-                        <td className="py-2.5 px-4 text-emerald-400 font-bold bg-current/[0.04]">
-                          <Check className="w-3.5 h-3.5 inline mr-1" />{cm}
-                        </td>
-                        <td className="py-2.5 px-4 opacity-60">
-                          {n ? n : <X className="w-3.5 h-3.5 inline text-rose-400" />}
-                        </td>
-                        <td className="py-2.5 px-4 opacity-60">
-                          {h ? h : <X className="w-3.5 h-3.5 inline text-rose-400" />}
-                        </td>
-                        <td className="py-2.5 px-4 opacity-60">
-                          {s ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 inline text-emerald-400 mr-1" />
-                              {s}
-                            </>
-                          ) : (
-                            <X className="w-3.5 h-3.5 inline text-rose-400" />
-                          )}
-                        </td>
+          <AnimatePresence>
+            {showComparison && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="overflow-hidden space-y-8"
+              >
+                {/* Comparison Table */}
+                <div className="glass-card rounded-2xl overflow-x-auto border border-current/15">
+                  <table className="w-full text-left text-xs font-mono min-w-[520px]">
+                    <thead>
+                      <tr className="border-b border-current/10 bg-current/[0.03]">
+                        <th className="py-3 px-4 opacity-50">Feature Capability</th>
+                        <th className="py-3 px-4 font-bold text-current bg-current/[0.06]">Chrono Matrix</th>
+                        <th className="py-3 px-4 opacity-50">Notion</th>
+                        <th className="py-3 px-4 opacity-50">Habitica</th>
+                        <th className="py-3 px-4 opacity-50">Streaks</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-current/[0.07]">
+                      {[
+                        ['100% Free / Zero Paywalls', 'Free Forever', 'Free / $10/mo', '$5/mo', '$5.99'],
+                        ['1% Mathematical Compounding Curve', 'Built-in Vector Math', null, null, null],
+                        ['Automated 2-Day Breach Sanctions', 'Enforced Lockdown', null, 'Health loss', null],
+                        ['Air-Gapped Offline PWA', 'Instant Guest Mode', null, null, 'iOS only'],
+                        ['Local Data Sovereignty (JSON Export)', '1-Click Portability', 'Complex API', null, 'iCloud only'],
+                      ].map(([cap, cm, n, h, s]) => (
+                        <tr key={cap as string}>
+                          <td className="py-3 px-4 font-semibold">{cap}</td>
+                          <td className="py-3 px-4 text-emerald-400 font-bold bg-current/[0.06]">
+                            <Check className="w-3.5 h-3.5 inline mr-1 stroke-[3]" />{cm}
+                          </td>
+                          <td className="py-3 px-4 opacity-60">
+                            {n ? n : <X className="w-3.5 h-3.5 inline text-rose-400" />}
+                          </td>
+                          <td className="py-3 px-4 opacity-60">
+                            {h ? h : <X className="w-3.5 h-3.5 inline text-rose-400" />}
+                          </td>
+                          <td className="py-3 px-4 opacity-60">
+                            {s ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 inline text-emerald-400 mr-1" />{s}
+                              </>
+                            ) : (
+                              <X className="w-3.5 h-3.5 inline text-rose-400" />
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
-              {/* FAQs */}
-              <div className="space-y-2 text-left">
-                <span className="text-[11px] font-mono uppercase tracking-wider opacity-50 block mb-4 text-center">
-                  Frequently Asked Questions
-                </span>
-                {FAQS.map((faq, idx) => (
-                  <div key={idx} className="glass-card rounded-2xl border border-current/[0.08] overflow-hidden">
-                    <button
-                      onClick={() => toggleFaq(idx)}
-                      className="w-full py-3.5 px-4 text-left flex items-center justify-between text-xs sm:text-sm font-semibold opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      <span>{faq.q}</span>
-                      <ChevronDown
-                        className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${openFaq === idx ? 'rotate-180' : ''}`}
-                      />
-                    </button>
-                    {openFaq === idx && (
-                      <div className="px-4 pb-3.5 text-xs opacity-70 leading-relaxed font-serif-app italic border-t border-current/[0.05] pt-2.5 page-enter">
-                        {faq.a}
-                      </div>
-                    )}
+                {/* FAQ Accordion */}
+                <div className="space-y-2">
+                  <div className="text-[11px] font-mono uppercase tracking-wider opacity-50 text-center mb-3">
+                    Frequently Asked Questions
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  {FAQS.map((faq, idx) => (
+                    <div key={idx} className="glass-card rounded-2xl border border-current/10 overflow-hidden">
+                      <button
+                        onClick={() => toggleFaq(idx)}
+                        className="w-full py-4 px-5 text-left flex items-center justify-between text-xs sm:text-sm font-semibold opacity-90 hover:opacity-100 cursor-pointer"
+                      >
+                        <span>{faq.q}</span>
+                        <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${openFaq === idx ? 'rotate-180' : ''}`} />
+                      </button>
+                      <AnimatePresence>
+                        {openFaq === idx && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-5 pb-4 text-xs opacity-70 leading-relaxed font-serif-app italic border-t border-current/5 pt-3">
+                              {faq.a}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
-      {/* ── FINAL CTA ─────────────────────────────────────────── */}
-      <section className="px-4 sm:px-8 lg:px-12 py-16 sm:py-24 border-t border-current/[0.07]">
-        <RevealBlock className="max-w-2xl mx-auto text-center space-y-6">
-          <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">
-            Start your discipline protocol.
+      {/* ─────────────────────────────────────────────────────────────
+          PHASE 5: BOTTOM TERMINAL LAUNCHPAD
+      ───────────────────────────────────────────────────────────── */}
+      <section className="px-4 sm:px-8 py-20 sm:py-28 border-t border-current/10 text-center relative overflow-hidden">
+        <div className="max-w-2xl mx-auto space-y-6 relative z-10">
+          <div className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center mx-auto border border-current/20 shadow-xl">
+            <Sparkles className="w-6 h-6 text-emerald-400" />
+          </div>
+
+          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">
+            Stop starting over.
             <br />
-            <span className="font-serif-app italic font-normal opacity-80">Today.</span>
+            <span className="font-serif-app italic font-normal opacity-75">
+              Execute with mathematical discipline.
+            </span>
           </h2>
-          <p className="text-sm opacity-50 font-serif-app italic">
-            Free forever. No account required. No data leaving your device until you say so.
+
+          <p className="text-xs sm:text-sm opacity-60 font-serif-app italic max-w-md mx-auto">
+            100% free forever. No account creation required to start. Zero telemetry leaves your machine.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-xs sm:max-w-none mx-auto">
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 max-w-sm sm:max-w-none mx-auto">
             <button
               onClick={onGetStarted}
-              className="w-full sm:w-auto px-8 py-4 rounded-full btn-solid-invert font-semibold text-sm tracking-wide transition-all shadow-xl flex items-center justify-center gap-2.5 btn-press cursor-pointer"
+              className="w-full sm:w-auto px-8 py-4 rounded-full btn-solid-invert font-semibold text-sm tracking-wide transition-all shadow-2xl flex items-center justify-center gap-2 btn-press cursor-pointer"
             >
-              Get Started
+              <span>Initialize Chrono Matrix</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
               onClick={onExploreOffline}
-              className="w-full sm:w-auto px-7 py-4 rounded-full glass-card hover:bg-current/[0.05] transition-all text-xs font-mono tracking-wider uppercase opacity-80 hover:opacity-100 flex items-center justify-center gap-2 btn-press cursor-pointer"
+              className="w-full sm:w-auto px-7 py-4 rounded-full glass-card hover:bg-current/10 transition-all text-xs font-mono tracking-wider uppercase opacity-80 hover:opacity-100 flex items-center justify-center gap-2 btn-press cursor-pointer"
             >
               <HardDrive className="w-3.5 h-3.5" />
-              Try Offline
+              <span>Explore as Guest</span>
             </button>
           </div>
-        </RevealBlock>
+        </div>
       </section>
 
-      {/* ── FOOTER ───────────────────────────────────────────── */}
-      <footer className="px-4 sm:px-8 lg:px-12 py-6 border-t border-current/[0.07] flex items-center justify-between text-[11px] font-mono opacity-35">
-        <span>© 2026 Chrono Matrix</span>
-        <span>Minimalist Monochrome Productivity</span>
+      {/* Footer */}
+      <footer className="px-4 sm:px-8 py-6 border-t border-current/10 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono opacity-40 gap-2">
+        <span>CHRONO MATRIX · MINIMALIST MONOCHROME PRODUCTIVITY</span>
+        <span>ZERO SUBSCRIPTIONS · OPEN SPECIFICATION 2026</span>
       </footer>
     </div>
   );
