@@ -1,16 +1,12 @@
 import { useState } from 'react';
 import { 
   ArrowRight, 
-  TrendingUp, 
-  ShieldAlert, 
-  Moon, 
   HardDrive, 
-  Sparkles,
-  Zap,
-  Check,
-  X,
-  ChevronDown,
-  Flame
+  Check, 
+  X, 
+  ChevronDown, 
+  Flame, 
+  TrendingUp 
 } from 'lucide-react';
 
 interface LandingHeroProps {
@@ -23,6 +19,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   onGetStarted,
   onExploreOffline,
 }) => {
+  const [showComparison, setShowComparison] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const toggleFaq = (idx: number) => {
@@ -53,37 +50,33 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   ];
 
   return (
-    <div className="min-h-screen flex flex-col justify-between px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative overflow-hidden page-enter">
-      {/* Futuristic cyber grid & ambient lighting */}
+    <div className="min-h-screen flex flex-col justify-between px-4 sm:px-8 lg:px-12 py-8 sm:py-12 relative overflow-hidden page-enter">
+      {/* Subtle ambient lighting */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 cyber-grid opacity-80" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] h-[850px] rounded-full bg-emerald-500/[0.035] blur-[150px]" />
-        <div className="absolute top-1/3 right-10 w-[550px] h-[550px] rounded-full bg-purple-500/[0.03] blur-[120px]" />
-        <div className="absolute bottom-0 left-10 w-[500px] h-[500px] rounded-full bg-white/[0.015] blur-[100px]" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-white/[0.012] blur-[140px]" />
       </div>
 
       {/* Top brand indicator */}
-      <div className="max-w-6xl mx-auto w-full flex items-center justify-between z-10 mb-8 sm:mb-12">
+      <header className="max-w-5xl mx-auto w-full flex items-center justify-between z-10 mb-12 sm:mb-20">
         <div className="flex items-center gap-2.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-current" />
-          <span className="text-sm font-semibold tracking-wider uppercase font-mono">
+          <div className="w-2 h-2 rounded-full bg-current opacity-80" />
+          <span className="text-xs sm:text-sm font-semibold tracking-widest uppercase font-mono">
             CHRONO MATRIX
           </span>
-          <span className="font-signature text-xs opacity-60 ml-1">system</span>
         </div>
         <button
           onClick={onGetStarted}
-          className="text-xs font-mono uppercase tracking-wider px-3.5 py-1.5 rounded-xl border border-current/20 hover:bg-current/10 transition-all btn-press cursor-pointer"
+          className="text-xs font-mono uppercase tracking-wider px-3.5 py-1.5 rounded-full border border-current/15 hover:bg-current/10 transition-all btn-press cursor-pointer"
         >
           Sign In →
         </button>
-      </div>
+      </header>
 
-      {/* Hero Narrative */}
-      <div className="max-w-4xl mx-auto w-full my-auto text-center z-10 py-10 sm:py-16 space-y-6 sm:space-y-8">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card text-[11px] font-mono tracking-widest uppercase opacity-85">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          The Science of Relentless Compounding
+      {/* Hero Narrative: Ultra-clean, unhurried, breathing */}
+      <main className="max-w-3xl mx-auto w-full text-center z-10 py-6 sm:py-12 space-y-6 sm:space-y-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card text-[11px] font-mono tracking-widest uppercase opacity-75">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse" />
+          Minimalist Discipline Matrix
         </div>
 
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight font-sans-app leading-[1.08]">
@@ -94,391 +87,228 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           </span>
         </h1>
 
-        <p className="max-w-2xl mx-auto text-sm sm:text-lg font-serif-app italic opacity-75 leading-relaxed">
-          "If you get one percent better each day for one year, you’ll end up thirty-seven times better. 
-          If you deteriorate one percent each day, you decline nearly to zero."
+        <p className="max-w-xl mx-auto text-sm sm:text-base font-serif-app italic opacity-70 leading-relaxed">
+          A minimalist monochrome habit matrix engineered for relentless consistency. Zero friction, zero distraction, pure execution.
         </p>
 
-        {/* CTA Buttons with Shimmer Sweep */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4 max-w-md mx-auto sm:max-w-none">
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2 max-w-md mx-auto sm:max-w-none">
           <button
             onClick={onGetStarted}
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl btn-solid-invert btn-shimmer font-semibold text-sm sm:text-base transition-all shadow-2xl flex items-center justify-center gap-3 btn-press cursor-pointer"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-full btn-solid-invert font-semibold text-xs sm:text-sm tracking-wide transition-all shadow-xl flex items-center justify-center gap-2.5 btn-press cursor-pointer"
           >
             <span>Start Tracking (Google / Email)</span>
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-4 h-4" />
           </button>
           <button
             onClick={onExploreOffline}
-            className="w-full sm:w-auto px-6 py-4 rounded-2xl glass-card hover:bg-white/5 transition-all text-xs font-mono tracking-wider uppercase opacity-80 hover:opacity-100 flex items-center justify-center gap-2 btn-press cursor-pointer"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-full glass-card hover:bg-current/[0.05] transition-all text-xs font-mono tracking-wider uppercase opacity-80 hover:opacity-100 flex items-center justify-center gap-2 btn-press cursor-pointer"
           >
-            <HardDrive className="w-4 h-4" />
+            <HardDrive className="w-3.5 h-3.5" />
             <span>Try Offline Guest Mode</span>
           </button>
         </div>
-      </div>
+      </main>
 
-      {/* =========================================================================
-          FUTURISTIC 3D PERSPECTIVE HERO CONSOLE (Webflow Labs & Riffs Inspired)
-         ========================================================================= */}
-      <div className="max-w-5xl mx-auto w-full z-10 my-8 sm:my-14 perspective-mockup px-2 sm:px-4">
-        <div className="relative">
-          {/* Ambient Glowing Orbs */}
-          <div className="absolute -top-12 left-1/4 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse" />
-          <div className="absolute -bottom-10 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
-
-          {/* Floating Telemetry Badges with Staggered Motion */}
-          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card bento-card text-[11px] font-mono tracking-tight absolute -top-5 -left-4 z-20 float-delay-1 border border-emerald-500/30">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 beacon-pulse" />
-            <span>(1.01)³⁶⁵ = 37.8× COMPOUNDING</span>
-          </div>
-
-          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card bento-card text-[11px] font-mono tracking-tight absolute -top-4 -right-4 z-20 float-delay-2 border border-purple-500/30">
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span>AI WARDEN ENFORCED</span>
-          </div>
-
-          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card bento-card text-[11px] font-mono tracking-tight absolute -bottom-5 -left-3 z-20 float-delay-3 border border-white/20">
-            <HardDrive className="w-3.5 h-3.5 text-cyan-400" />
-            <span>AIR-GAPPED LOCAL PWA</span>
-          </div>
-
-          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-card bento-card text-[11px] font-mono tracking-tight absolute -bottom-5 -right-3 z-20 float-delay-1 border border-amber-500/30">
-            <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-            <span>ZERO UNEXPLAINED BREAKS</span>
-          </div>
-
-          {/* Main 3D Container with Rotating Border Beam */}
-          <div className="border-beam p-[1px] perspective-inner shadow-2xl">
-            <div className="border-beam-content rounded-3xl p-3.5 sm:p-6 space-y-4 border border-current/[0.1]">
-              
-              {/* Window Header Chrome */}
-              <div className="flex items-center justify-between pb-3 border-b border-current/[0.08]">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500/70" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
-                  <span className="ml-2 text-[10px] sm:text-xs font-mono opacity-50">chrono.matrix // console</span>
-                </div>
-                <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse" />
-                  <span className="text-emerald-400 font-bold tracking-wider">DISCIPLINE MATRIX ACTIVE</span>
-                </div>
-              </div>
-
-              {/* Console Mock Content: Mini Habit Matrix + Mini Curve */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-                
-                {/* Left 2 Cols: Interactive Habit Matrix Preview */}
-                <div className="md:col-span-2 space-y-2 font-mono text-xs">
-                  <div className="flex items-center justify-between text-[10px] opacity-50 uppercase tracking-wider pb-1">
-                    <span>Active Rituals</span>
-                    <span>Mo Tu We Th Fr Sa Su</span>
-                  </div>
-
-                  {/* Habit Row 1 */}
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-current/[0.03] border border-current/[0.06] hover:bg-current/[0.06] transition-all">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-cyan-400 shrink-0" />
-                      <span className="font-semibold text-current text-xs">Deep Focus Block</span>
-                      <span className="text-[10px] text-amber-400 flex items-center gap-0.5">🔥 14d</span>
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                      {[1, 1, 1, 1, 1, 1, 1].map((_, i) => (
-                        <div key={i} className="w-5 h-5 rounded-md cell-checked flex items-center justify-center">
-                          <Check className="w-3 h-3 text-black" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Habit Row 2 */}
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-current/[0.03] border border-current/[0.06] hover:bg-current/[0.06] transition-all">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                      <span className="font-semibold text-current text-xs">Physical Resistance</span>
-                      <span className="text-[10px] text-amber-400 flex items-center gap-0.5">🔥 9d</span>
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                      {[1, 1, 1, 1, 1, 0, 1].map((done, i) => (
-                        <div key={i} className={`w-5 h-5 rounded-md flex items-center justify-center ${done ? 'cell-checked' : 'cell-unchecked'}`}>
-                          {done ? <Check className="w-3 h-3 text-black" /> : null}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Habit Row 3 */}
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-current/[0.03] border border-current/[0.06] hover:bg-current/[0.06] transition-all">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
-                      <span className="font-semibold text-current text-xs">Evening Stoic Reflection</span>
-                      <span className="text-[10px] text-amber-400 flex items-center gap-0.5">🔥 21d</span>
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                      {[1, 1, 1, 1, 1, 1, 1].map((_, i) => (
-                        <div key={i} className="w-5 h-5 rounded-md cell-checked flex items-center justify-center">
-                          <Check className="w-3 h-3 text-black" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right 1 Col: Mini Telemetry Card */}
-                <div className="p-3.5 rounded-2xl bg-current/[0.025] border border-current/[0.08] flex flex-col justify-between space-y-3 font-mono">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[10px] opacity-50">
-                      <span>Compounding</span>
-                      <TrendingUp className="w-3 h-3 text-emerald-400" />
-                    </div>
-                    <div className="text-2xl font-bold text-emerald-400">+38.4%</div>
-                    <div className="text-[10px] opacity-60">vs 30d baseline</div>
-                  </div>
-
-                  {/* Mini Ascending Graph Path */}
-                  <div className="h-12 w-full flex items-end gap-1 pt-1">
-                    {[30, 42, 45, 50, 60, 68, 75, 82, 88, 95, 100].map((h, i) => (
-                      <div 
-                        key={i} 
-                        className="flex-1 bg-current opacity-20 hover:opacity-100 hover:bg-emerald-400 rounded-t transition-all"
-                        style={{ height: `${h}%` }}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="pt-1 border-t border-current/[0.08] flex items-center justify-between text-[10px]">
-                    <span className="opacity-50">Breach Tribunal</span>
-                    <span className="text-emerald-400 font-bold">ARMED · 0 PENALTIES</span>
-                  </div>
-                </div>
-
-              </div>
-
+      {/* Clean Understated Product Preview: Pure Minimalism without Clutter */}
+      <section className="max-w-4xl mx-auto w-full z-10 my-10 sm:my-16 px-2 sm:px-4">
+        <div className="glass-card rounded-3xl p-4 sm:p-7 border border-current/[0.1] shadow-2xl relative">
+          
+          {/* Subtle Header */}
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-current/[0.07] text-xs font-mono">
+            <div className="flex items-center gap-2 opacity-60">
+              <span className="w-2 h-2 rounded-full bg-current opacity-60" />
+              <span>Oct 26 — Nov 1</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-amber-500 font-bold flex items-center gap-1">
+                <Flame className="w-3 h-3 fill-amber-500" />
+                14d Streak
+              </span>
+              <span className="text-[10px] opacity-40">·</span>
+              <span className="text-[10px] text-emerald-400 font-bold">94% Done</span>
             </div>
           </div>
+
+          {/* Minimal 3-row Matrix Mockup */}
+          <div className="space-y-2 font-mono text-xs">
+            {/* Habit 1 */}
+            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-current/[0.02] border border-current/[0.05]">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2 h-2 rounded-full bg-cyan-400 shrink-0" />
+                <span className="font-semibold text-current text-xs truncate">Deep Focus Work</span>
+                <span className="text-[10px] opacity-40 hidden sm:inline">Focus</span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {[1, 1, 1, 1, 1, 1, 1].map((_, i) => (
+                  <div key={i} className="w-6 h-6 rounded-lg cell-checked flex items-center justify-center">
+                    <Check className="w-3 h-3" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Habit 2 */}
+            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-current/[0.02] border border-current/[0.05]">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                <span className="font-semibold text-current text-xs truncate">Physical Resistance</span>
+                <span className="text-[10px] opacity-40 hidden sm:inline">Fitness</span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {[1, 1, 1, 1, 1, 0, 1].map((done, i) => (
+                  <div key={i} className={`w-6 h-6 rounded-lg flex items-center justify-center ${done ? 'cell-checked' : 'cell-unchecked'}`}>
+                    {done ? <Check className="w-3 h-3" /> : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Habit 3 */}
+            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-current/[0.02] border border-current/[0.05]">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
+                <span className="font-semibold text-current text-xs truncate">Evening Stoic Reflection</span>
+                <span className="text-[10px] opacity-40 hidden sm:inline">Mind</span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {[1, 1, 1, 1, 1, 1, 1].map((_, i) => (
+                  <div key={i} className="w-6 h-6 rounded-lg cell-checked flex items-center justify-center">
+                    <Check className="w-3 h-3" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Minimal 1% Curve Telemetry Footer */}
+          <div className="mt-4 pt-3 border-t border-current/[0.07] flex items-center justify-between text-[11px] font-mono opacity-70">
+            <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+              <TrendingUp className="w-3.5 h-3.5" />
+              (1.01)³⁶⁵ = 37.8× Compounding Law
+            </span>
+            <span className="hidden sm:inline opacity-50">Local-First · Zero Lag</span>
+          </div>
+
         </div>
-      </div>
+      </section>
 
-      {/* 4 Futuristic Webflow-Style Bento Pillars */}
-      <div className="max-w-6xl mx-auto w-full z-10 pt-4 pb-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bento-card rounded-2xl p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
-              </div>
-              <span className="text-[10px] font-mono opacity-40 uppercase">[SYS.01]</span>
-            </div>
-            <h3 className="text-sm font-semibold">1% Compounding Curve</h3>
-            <p className="text-xs opacity-70 leading-relaxed">
-              Real-time mathematical trajectory. Complete rituals to compound upward; missed days dip the curve downward.
+      {/* Refined 3-Column Architectural Features */}
+      <section className="max-w-4xl mx-auto w-full z-10 py-8 border-t border-current/[0.07]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+          <div className="space-y-2">
+            <span className="text-xs font-mono opacity-40 uppercase">01 / Execution</span>
+            <h3 className="text-sm font-semibold">1-Tap Consistency</h3>
+            <p className="text-xs opacity-70 leading-relaxed font-serif-app italic">
+              Clean daily grid. Instant local persistence and cloud sync with zero friction or complex Notion formulas.
             </p>
           </div>
 
-          <div className="bento-card rounded-2xl p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
-                <ShieldAlert className="w-4 h-4 text-rose-400" />
-              </div>
-              <span className="text-[10px] font-mono opacity-40 uppercase">[SYS.02]</span>
-            </div>
+          <div className="space-y-2">
+            <span className="text-xs font-mono opacity-40 uppercase">02 / Momentum</span>
+            <h3 className="text-sm font-semibold">1% Mathematical Curve</h3>
+            <p className="text-xs opacity-70 leading-relaxed font-serif-app italic">
+              Atomic compounding trajectory. Executed habits compound upward; missed sessions decelerate toward baseline.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-xs font-mono opacity-40 uppercase">03 / Discipline</span>
             <h3 className="text-sm font-semibold">AI Accountability Tribunal</h3>
-            <p className="text-xs opacity-70 leading-relaxed">
-              Miss a habit 2 days in a row? Google Gemini AI warden intervenes with an immediate disciplinary penalty.
-            </p>
-          </div>
-
-          <div className="bento-card rounded-2xl p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
-                <Moon className="w-4 h-4 text-amber-300" />
-              </div>
-              <span className="text-[10px] font-mono opacity-40 uppercase">[SYS.03]</span>
-            </div>
-            <h3 className="text-sm font-semibold">Sleep & Midday Naps</h3>
-            <p className="text-xs opacity-70 leading-relaxed">
-              Log nocturnal recovery and power naps. Correlate wakefulness with Google Fit activity telemetry.
-            </p>
-          </div>
-
-          <div className="bento-card rounded-2xl p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-white/[0.04] w-fit">
-                <Zap className="w-4 h-4 text-purple-400" />
-              </div>
-              <span className="text-[10px] font-mono opacity-40 uppercase">[SYS.04]</span>
-            </div>
-            <h3 className="text-sm font-semibold">Daily Micro-Journal</h3>
-            <p className="text-xs opacity-70 leading-relaxed">
-              Capture each day in a single poignant line, marking whether the day pushed your boundaries or weighed you down.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* SEO SECTION 1: THE MATHEMATICS OF COMPOUNDING */}
-      <section className="max-w-5xl mx-auto w-full z-10 py-12 border-t border-current/[0.07]">
-        <div className="text-center space-y-3 mb-10">
-          <span className="text-[11px] font-mono uppercase tracking-widest opacity-50">Scientific Discipline</span>
-          <h2 className="text-2xl sm:text-4xl font-bold font-serif-app">The Mathematics of 1% Compounding</h2>
-          <p className="text-xs sm:text-sm font-serif-app italic opacity-70 max-w-2xl mx-auto">
-            Small disciplines repeated daily create exponential divergence over a calendar year.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-4 border border-emerald-500/20 bg-emerald-500/[0.02]">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">The Compounding Law</span>
-              <span className="text-2xl font-mono font-bold text-emerald-400">37.78×</span>
-            </div>
-            <div className="font-mono text-base font-bold text-current">
-              (1.01)³⁶⁵ = 37.78
-            </div>
-            <p className="text-xs opacity-75 leading-relaxed font-serif-app italic">
-              Improving just 1% every day for 365 days yields a thirty-seven fold increase in capability, focus, and physical mastery. Consistency beats sporadic intensity.
-            </p>
-          </div>
-
-          <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-4 border border-rose-500/20 bg-rose-500/[0.02]">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider">The Decay Law</span>
-              <span className="text-2xl font-mono font-bold text-rose-400">0.03×</span>
-            </div>
-            <div className="font-mono text-base font-bold text-current">
-              (0.99)³⁶⁵ = 0.03
-            </div>
-            <p className="text-xs opacity-75 leading-relaxed font-serif-app italic">
-              Allowing 1% slippage or regression every day reduces your discipline to nearly zero. This is why Chrono Matrix enforces the strict 2-Day Breach rule.
+            <p className="text-xs opacity-70 leading-relaxed font-serif-app italic">
+              Never miss twice. A 2-day breach automatically locks rituals until a disciplinary penalty is completed.
             </p>
           </div>
         </div>
       </section>
 
-      {/* SEO SECTION 2: COMPARISON TABLE */}
-      <section className="max-w-5xl mx-auto w-full z-10 py-12 border-t border-current/[0.07]">
-        <div className="text-center space-y-3 mb-10">
-          <span className="text-[11px] font-mono uppercase tracking-widest opacity-50">Feature Breakdown</span>
-          <h2 className="text-2xl sm:text-4xl font-bold font-serif-app">Chrono Matrix vs Bloated Habit Trackers</h2>
-          <p className="text-xs sm:text-sm font-serif-app italic opacity-70 max-w-2xl mx-auto">
-            Why modern high-performers choose minimal friction over complex setups.
-          </p>
+      {/* Collapsible Deep Specs & SEO Comparison (Tucked cleanly at bottom) */}
+      <section className="max-w-4xl mx-auto w-full z-10 py-6 border-t border-current/[0.07]">
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={() => setShowComparison(!showComparison)}
+            className="text-xs font-mono opacity-60 hover:opacity-100 px-4 py-2 rounded-full glass-card transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>{showComparison ? 'Hide' : 'View'} System Specs vs Other Trackers</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showComparison ? 'rotate-180' : ''}`} />
+          </button>
         </div>
 
-        <div className="glass-card rounded-3xl overflow-x-auto border border-current/[0.09]">
-          <table className="w-full text-left text-xs font-mono min-w-[550px]">
-            <thead>
-              <tr className="border-b border-current/[0.08] bg-current/[0.02]">
-                <th className="py-3.5 px-4 opacity-60">Capabilities</th>
-                <th className="py-3.5 px-4 font-bold text-current bg-current/[0.04]">Chrono Matrix</th>
-                <th className="py-3.5 px-4 opacity-60">Notion</th>
-                <th className="py-3.5 px-4 opacity-60">Habitica</th>
-                <th className="py-3.5 px-4 opacity-60">Streaks App</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-current/[0.06]">
-              <tr>
-                <td className="py-3 px-4 font-semibold">100% Free / Zero Paywalls</td>
-                <td className="py-3 px-4 text-emerald-400 font-bold bg-current/[0.04]"><Check className="w-4 h-4 inline" /> Free Forever</td>
-                <td className="py-3 px-4 opacity-60">Free / $10/mo</td>
-                <td className="py-3 px-4 opacity-60">$5/mo sub</td>
-                <td className="py-3 px-4 opacity-60">$5.99 paid</td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 font-semibold">1% Compounding Trajectory Curve</td>
-                <td className="py-3 px-4 text-emerald-400 font-bold bg-current/[0.04]"><Check className="w-4 h-4 inline" /> Built-in Math</td>
-                <td className="py-3 px-4 opacity-60"><X className="w-4 h-4 inline text-rose-400" /> Complex manual formula</td>
-                <td className="py-3 px-4 opacity-60"><X className="w-4 h-4 inline text-rose-400" /> Cartoon XP only</td>
-                <td className="py-3 px-4 opacity-60"><X className="w-4 h-4 inline text-rose-400" /> No trajectory</td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 font-semibold">Auto 2-Day Breach Tribunal Lock</td>
-                <td className="py-3 px-4 text-emerald-400 font-bold bg-current/[0.04]"><Check className="w-4 h-4 inline" /> Automated Penalty</td>
-                <td className="py-3 px-4 opacity-60"><X className="w-4 h-4 inline text-rose-400" /> None</td>
-                <td className="py-3 px-4 opacity-60">Virtual health loss</td>
-                <td className="py-3 px-4 opacity-60"><X className="w-4 h-4 inline text-rose-400" /> None</td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 font-semibold">Offline PWA & Air-Gapped Guest Mode</td>
-                <td className="py-3 px-4 text-emerald-400 font-bold bg-current/[0.04]"><Check className="w-4 h-4 inline" /> 1-Click Guest</td>
-                <td className="py-3 px-4 opacity-60"><X className="w-4 h-4 inline text-rose-400" /> Requires Login</td>
-                <td className="py-3 px-4 opacity-60"><X className="w-4 h-4 inline text-rose-400" /> Requires Account</td>
-                <td className="py-3 px-4 opacity-60"><Check className="w-4 h-4 inline text-emerald-400" /> Local only (iOS)</td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 font-semibold">Circadian Sleep & Nap Tracking</td>
-                <td className="py-3 px-4 text-emerald-400 font-bold bg-current/[0.04]"><Check className="w-4 h-4 inline" /> 14-Night Graph</td>
-                <td className="py-3 px-4 opacity-60"><X className="w-4 h-4 inline text-rose-400" /> None</td>
-                <td className="py-3 px-4 opacity-60"><X className="w-4 h-4 inline text-rose-400" /> None</td>
-                <td className="py-3 px-4 opacity-60"><X className="w-4 h-4 inline text-rose-400" /> None</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        {showComparison && (
+          <div className="mt-8 space-y-8 page-enter">
+            {/* Comparison Table */}
+            <div className="glass-card rounded-2xl overflow-x-auto border border-current/[0.09]">
+              <table className="w-full text-left text-xs font-mono min-w-[500px]">
+                <thead>
+                  <tr className="border-b border-current/[0.08] bg-current/[0.02]">
+                    <th className="py-3 px-4 opacity-60">Capabilities</th>
+                    <th className="py-3 px-4 font-bold text-current bg-current/[0.04]">Chrono Matrix</th>
+                    <th className="py-3 px-4 opacity-60">Notion</th>
+                    <th className="py-3 px-4 opacity-60">Habitica</th>
+                    <th className="py-3 px-4 opacity-60">Streaks App</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-current/[0.06]">
+                  <tr>
+                    <td className="py-2.5 px-4 font-semibold">100% Free / Zero Paywalls</td>
+                    <td className="py-2.5 px-4 text-emerald-400 font-bold bg-current/[0.04]"><Check className="w-3.5 h-3.5 inline" /> Free Forever</td>
+                    <td className="py-2.5 px-4 opacity-60">Free / $10/mo</td>
+                    <td className="py-2.5 px-4 opacity-60">$5/mo sub</td>
+                    <td className="py-2.5 px-4 opacity-60">$5.99 paid</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 px-4 font-semibold">1% Compounding Curve</td>
+                    <td className="py-2.5 px-4 text-emerald-400 font-bold bg-current/[0.04]"><Check className="w-3.5 h-3.5 inline" /> Built-in Math</td>
+                    <td className="py-2.5 px-4 opacity-60"><X className="w-3.5 h-3.5 inline text-rose-400" /> Manual setup</td>
+                    <td className="py-2.5 px-4 opacity-60"><X className="w-3.5 h-3.5 inline text-rose-400" /> XP only</td>
+                    <td className="py-2.5 px-4 opacity-60"><X className="w-3.5 h-3.5 inline text-rose-400" /> None</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 px-4 font-semibold">Auto 2-Day Breach Lock</td>
+                    <td className="py-2.5 px-4 text-emerald-400 font-bold bg-current/[0.04]"><Check className="w-3.5 h-3.5 inline" /> Automated</td>
+                    <td className="py-2.5 px-4 opacity-60"><X className="w-3.5 h-3.5 inline text-rose-400" /> None</td>
+                    <td className="py-2.5 px-4 opacity-60">Health loss</td>
+                    <td className="py-2.5 px-4 opacity-60"><X className="w-3.5 h-3.5 inline text-rose-400" /> None</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 px-4 font-semibold">Offline Local-First PWA</td>
+                    <td className="py-2.5 px-4 text-emerald-400 font-bold bg-current/[0.04]"><Check className="w-3.5 h-3.5 inline" /> 1-Click Guest</td>
+                    <td className="py-2.5 px-4 opacity-60"><X className="w-3.5 h-3.5 inline text-rose-400" /> Login needed</td>
+                    <td className="py-2.5 px-4 opacity-60"><X className="w-3.5 h-3.5 inline text-rose-400" /> Account needed</td>
+                    <td className="py-2.5 px-4 opacity-60"><Check className="w-3.5 h-3.5 inline text-emerald-400" /> iOS only</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Accordion FAQs */}
+            <div className="space-y-2 text-left">
+              <span className="text-[11px] font-mono uppercase tracking-wider opacity-50 block mb-2 text-center">Frequently Asked Questions</span>
+              {FAQS.map((faq, idx) => (
+                <div key={idx} className="glass-card rounded-2xl border border-current/[0.08] overflow-hidden">
+                  <button
+                    onClick={() => toggleFaq(idx)}
+                    className="w-full py-3.5 px-4 text-left flex items-center justify-between text-xs sm:text-sm font-semibold opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
+                  </button>
+                  {openFaq === idx && (
+                    <div className="px-4 pb-3.5 text-xs opacity-70 leading-relaxed font-serif-app italic border-t border-current/[0.05] pt-2.5">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
-      {/* SEO SECTION 3: FAQ ACCORDION */}
-      <section className="max-w-4xl mx-auto w-full z-10 py-12 border-t border-current/[0.07]">
-        <div className="text-center space-y-3 mb-10">
-          <span className="text-[11px] font-mono uppercase tracking-widest opacity-50">Knowledge Base</span>
-          <h2 className="text-2xl sm:text-4xl font-bold font-serif-app">Frequently Asked Questions</h2>
-          <p className="text-xs sm:text-sm font-serif-app italic opacity-70">
-            Everything you need to know about Chrono Matrix discipline protocol.
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          {FAQS.map((faq, idx) => {
-            const isOpen = openFaq === idx;
-            return (
-              <div 
-                key={idx}
-                className="glass-card rounded-2xl border border-current/[0.08] overflow-hidden transition-all"
-              >
-                <button
-                  onClick={() => toggleFaq(idx)}
-                  className="w-full py-4 px-5 flex items-center justify-between text-left gap-4 cursor-pointer hover:bg-current/[0.02]"
-                >
-                  <span className="text-sm font-semibold font-serif-app text-current">{faq.q}</span>
-                  <ChevronDown className={`w-4 h-4 opacity-50 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm font-serif-app italic opacity-80 leading-relaxed border-t border-current/[0.05]">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* BOTTOM CTA */}
-      <div className="max-w-4xl mx-auto w-full z-10 py-12 text-center space-y-5 border-t border-current/[0.07]">
-        <h3 className="text-2xl sm:text-3xl font-bold font-serif-app">Ready to build unbreakable discipline?</h3>
-        <p className="text-xs sm:text-sm font-serif-app italic opacity-70 max-w-md mx-auto">
-          Start with 4 core rituals today. Watch your compounding trajectory curve rise over the next 30 days.
-        </p>
-        <button
-          onClick={onGetStarted}
-          className="px-8 py-3.5 rounded-2xl btn-solid-invert font-semibold text-sm transition-all shadow-xl inline-flex items-center gap-2 btn-press cursor-pointer"
-        >
-          <span>Open Sovereign Matrix</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Minimal Footer */}
-      <footer className="max-w-6xl mx-auto w-full z-10 pt-6 pb-2 border-t border-current/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono opacity-50">
-        <div>
-          <span>CHRONO MATRIX © 2026 • Minimalist Discipline Protocol</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <button onClick={onExploreOffline} className="hover:underline cursor-pointer">Offline PWA</button>
-          <span>•</span>
-          <button onClick={onGetStarted} className="hover:underline cursor-pointer">Cloud Sync</button>
-        </div>
+      {/* Understated Minimalist Footer */}
+      <footer className="max-w-5xl mx-auto w-full flex items-center justify-between text-[11px] font-mono opacity-40 z-10 pt-6">
+        <span>© 2026 Chrono Matrix</span>
+        <span>Minimalist Monochrome Productivity</span>
       </footer>
     </div>
   );
