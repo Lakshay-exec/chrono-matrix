@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { 
   Task, 
   SleepRecord, 
@@ -28,7 +28,7 @@ import { PunishmentsWidget } from './components/PunishmentsWidget';
 import { AddTaskModal } from './components/AddTaskModal';
 import { ResetConfirmModal } from './components/ResetConfirmModal';
 import { DownloadPage } from './components/DownloadPage';
-import { HorizontalSlide } from './components/HorizontalSlide';
+import { TreeBranchNavigator } from './components/TreeBranchNavigator';
 import { 
   scanAndAutoAssignPunishments, 
   resetAccountabilityBaseline, 
@@ -75,8 +75,7 @@ export default function App() {
   const [potatoMode, setPotatoMode] = useState(() => getPotatoMode());
   const [theme, setTheme] = useState<ThemeMode>(() => getLocalTheme());
 
-  // Horizontal container reference
-  const horizontalCanvasRef = useRef<HTMLDivElement>(null);
+  // Active branch section
   const [activeSection, setActiveSection] = useState<string>('section-matrix');
 
   // Modals
@@ -103,115 +102,33 @@ export default function App() {
     saveLocalTheme(theme);
   }, [theme]);
 
-  // Synchronize active tab based on horizontal scroll position & support arrow/number key navigation
+  // Keyboard navigation across branches (1, 2, 3, 4, ArrowLeft, ArrowRight)
   useEffect(() => {
-    const canvas = horizontalCanvasRef.current;
-    if (!canvas) return;
-
-    let ticking = false;
-
-    const checkActiveTab = () => {
-      const canvasRect = canvas.getBoundingClientRect();
-      const canvasCenter = canvasRect.left + canvasRect.width / 2;
-
-      let closestId = SLIDE_IDS[0];
-      let minDistance = Infinity;
-
-      for (const sId of SLIDE_IDS) {
-        const el = document.getElementById(sId);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          const slideCenter = rect.left + rect.width / 2;
-          const dist = Math.abs(slideCenter - canvasCenter);
-          if (dist < minDistance) {
-            minDistance = dist;
-            closestId = sId;
-          }
-        }
-      }
-
-      setActiveSection((prev) => (prev !== closestId ? closestId : prev));
-      ticking = false;
-    };
-
-    const onScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(checkActiveTab);
-        ticking = true;
-      }
-    };
-
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === 'ArrowRight') {
-        const currIdx = SLIDE_IDS.indexOf(activeSection);
-        if (currIdx < SLIDE_IDS.length - 1) {
-          handleScrollToSection(SLIDE_IDS[currIdx + 1]);
-        }
-      } else if (e.key === 'ArrowLeft') {
-        const currIdx = SLIDE_IDS.indexOf(activeSection);
-        if (currIdx > 0) {
-          handleScrollToSection(SLIDE_IDS[currIdx - 1]);
-        }
-      } else if (e.key === '1') {
-        handleScrollToSection('section-matrix');
-      } else if (e.key === '2') {
-        handleScrollToSection('section-curve');
-      } else if (e.key === '3') {
-        handleScrollToSection('section-sleep');
-      } else if (e.key === '4') {
-        handleScrollToSection('section-accountability');
-      }
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      if (e.key === 'ArrowRight' || e.key === 'j') handleNextSlide();
+      if (e.key === 'ArrowLeft' || e.key === 'k') handlePrevSlide();
+      if (e.key === '1') setActiveSection(SLIDE_IDS[0]);
+      if (e.key === '2') setActiveSection(SLIDE_IDS[1]);
+      if (e.key === '3') setActiveSection(SLIDE_IDS[2]);
+      if (e.key === '4') setActiveSection(SLIDE_IDS[3]);
     };
-
-    // Use IntersectionObserver as a secondary instant trigger
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-            setActiveSection(entry.target.id);
-          }
-        }
-      },
-      { root: canvas, threshold: [0.5, 0.75] }
-    );
-
-    for (const sId of SLIDE_IDS) {
-      const el = document.getElementById(sId);
-      if (el) observer.observe(el);
-    }
-
-    canvas.addEventListener('scroll', onScroll, { passive: true });
-    canvas.addEventListener('scrollend', checkActiveTab, { passive: true });
     window.addEventListener('keydown', onKeyDown);
-
-    // Initial check on mount
-    checkActiveTab();
-
-    return () => {
-      canvas.removeEventListener('scroll', onScroll);
-      canvas.removeEventListener('scrollend', checkActiveTab);
-      window.removeEventListener('keydown', onKeyDown);
-      observer.disconnect();
-    };
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [activeSection]);
 
   const handleScrollToSection = (sectionId: string) => {
-    const el = document.getElementById(sectionId);
-    if (el && horizontalCanvasRef.current) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      setActiveSection(sectionId);
-    }
+    setActiveSection(sectionId);
   };
 
   const handlePrevSlide = () => {
     const idx = SLIDE_IDS.indexOf(activeSection);
-    if (idx > 0) handleScrollToSection(SLIDE_IDS[idx - 1]);
+    if (idx > 0) setActiveSection(SLIDE_IDS[idx - 1]);
   };
 
   const handleNextSlide = () => {
     const idx = SLIDE_IDS.indexOf(activeSection);
-    if (idx < SLIDE_IDS.length - 1) handleScrollToSection(SLIDE_IDS[idx + 1]);
+    if (idx < SLIDE_IDS.length - 1) setActiveSection(SLIDE_IDS[idx + 1]);
   };
 
   // Firebase auth state listener
@@ -438,70 +355,75 @@ export default function App() {
         />
       </div>
 
-      {/* Main Horizontal Canvas: Scrolls left-to-right smoothly via native scroll / navigation */}
-      <main
-        ref={horizontalCanvasRef}
-        className="horizontal-canvas flex-1 w-full overflow-x-auto overflow-y-auto flex flex-row items-start gap-4 sm:gap-10 px-2.5 sm:px-8 py-2.5 sm:py-4 snap-x snap-mandatory"
-      >
-        {/* Slide 1: Monthly Matrix Scheduler */}
-        <HorizontalSlide
-          id="section-matrix"
-          isActive={activeSection === 'section-matrix'}
-          onActivate={() => handleScrollToSection('section-matrix')}
+      {/* 3D Organic Tree Branch Camera Navigator */}
+      <main className="flex-1 w-full relative flex flex-col overflow-hidden">
+        <TreeBranchNavigator
+          activeSection={activeSection}
+          onSelectSection={(sId) => setActiveSection(sId)}
+          modules={[
+            {
+              id: 'section-matrix',
+              label: 'Ritual Matrix',
+              subtitle: 'Daily Execution & Micro-Consistency',
+              icon: Calendar,
+              branchName: 'Canopy Alpha',
+              component: (
+                <MonthlyScheduler
+                  tasks={tasks}
+                  journal={journal}
+                  punishments={punishments}
+                  onToggleCell={handleToggleCell}
+                  onAddTaskClick={() => setIsAddTaskOpen(true)}
+                  onDeleteTask={handleDeleteTask}
+                  onNavigateToTribunal={() => setActiveSection('section-accountability')}
+                  onOpenResetModal={() => setIsResetModalOpen(true)}
+                  potatoMode={potatoMode}
+                />
+              ),
+            },
+            {
+              id: 'section-curve',
+              label: '1% Trajectory Curve',
+              subtitle: 'Compounding Mathematical Momentum',
+              icon: TrendingUp,
+              branchName: 'Branch of Growth',
+              component: (
+                <ProductivityCurve
+                  tasks={tasks}
+                  potatoMode={potatoMode}
+                />
+              ),
+            },
+            {
+              id: 'section-sleep',
+              label: 'Circadian Sleep',
+              subtitle: 'Sleep Architecture & Recovery Naps',
+              icon: Moon,
+              branchName: 'Bough of Rest',
+              component: (
+                <SleepTracker
+                  records={sleepRecords}
+                  onSaveRecord={handleSaveSleep}
+                />
+              ),
+            },
+            {
+              id: 'section-accountability',
+              label: 'Discipline Tribunal',
+              subtitle: 'Automated 2-Day Breach Warden',
+              icon: ShieldAlert,
+              branchName: 'Thorn of Accountability',
+              component: (
+                <PunishmentsWidget
+                  punishments={punishments}
+                  onMarkServed={handleMarkServed}
+                  onOpenResetModal={() => setIsResetModalOpen(true)}
+                />
+              ),
+            },
+          ]}
           potatoMode={potatoMode}
-        >
-          <MonthlyScheduler
-            tasks={tasks}
-            journal={journal}
-            punishments={punishments}
-            onToggleCell={handleToggleCell}
-            onAddTaskClick={() => setIsAddTaskOpen(true)}
-            onDeleteTask={handleDeleteTask}
-            onNavigateToTribunal={() => handleScrollToSection('section-accountability')}
-            onOpenResetModal={() => setIsResetModalOpen(true)}
-            potatoMode={potatoMode}
-          />
-        </HorizontalSlide>
-
-        {/* Slide 2: The 1% Compounding Trajectory Curve */}
-        <HorizontalSlide
-          id="section-curve"
-          isActive={activeSection === 'section-curve'}
-          onActivate={() => handleScrollToSection('section-curve')}
-          potatoMode={potatoMode}
-        >
-          <ProductivityCurve
-            tasks={tasks}
-            potatoMode={potatoMode}
-          />
-        </HorizontalSlide>
-
-        {/* Slide 3: Circadian Sleep, Naps & Google Fit */}
-        <HorizontalSlide
-          id="section-sleep"
-          isActive={activeSection === 'section-sleep'}
-          onActivate={() => handleScrollToSection('section-sleep')}
-          potatoMode={potatoMode}
-        >
-          <SleepTracker
-            records={sleepRecords}
-            onSaveRecord={handleSaveSleep}
-          />
-        </HorizontalSlide>
-
-        {/* Slide 4: Accountability Tribunal */}
-        <HorizontalSlide
-          id="section-accountability"
-          isActive={activeSection === 'section-accountability'}
-          onActivate={() => handleScrollToSection('section-accountability')}
-          potatoMode={potatoMode}
-        >
-          <PunishmentsWidget
-            punishments={punishments}
-            onMarkServed={handleMarkServed}
-            onOpenResetModal={() => setIsResetModalOpen(true)}
-          />
-        </HorizontalSlide>
+        />
       </main>
 
       {/* Bottom Floating Navigation Dock */}
