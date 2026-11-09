@@ -326,3 +326,152 @@ html.light .cell-unchecked:hover {
 .horizontal-canvas::-webkit-scrollbar-thumb:hover {
   background: rgba(140, 140, 150, 0.55);
 }
+
+/* =========================================================================
+   FUTURISTIC SAAS & ANIMATION ENGINE (Webflow Labs / Linear / Riffs Inspired)
+   ========================================================================= */
+
+/* Cyber Grid with radial spotlight falloff */
+.cyber-grid {
+  background-size: 36px 36px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 30%, transparent 80%);
+}
+html.light .cyber-grid {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+}
+
+/* Rotating Animated Border Beam */
+.border-beam {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+}
+.border-beam::before {
+  content: '';
+  position: absolute;
+  inset: -150%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 280deg,
+    rgba(255, 255, 255, 0.1) 320deg,
+    rgba(255, 255, 255, 0.6) 350deg,
+    transparent 360deg
+  );
+  animation: rotateBeam 8s linear infinite;
+  pointer-events: none;
+}
+@keyframes rotateBeam {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.border-beam-content {
+  position: relative;
+  border-radius: calc(1.5rem - 1px);
+  background: var(--bg-app);
+  z-index: 1;
+}
+
+/* Button Luxury Shimmer Sweep */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.28),
+    transparent
+  );
+  transform: translateX(-150%);
+  animation: shimmerSweep 4.5s ease-in-out infinite;
+}
+@keyframes shimmerSweep {
+  0%, 20% {
+    transform: translateX(-150%);
+  }
+  60%, 100% {
+    transform: translateX(150%);
+  }
+}
+
+/* Pulsing Status Beacon */
+.beacon-pulse {
+  position: relative;
+}
+.beacon-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.5;
+  animation: beaconPing 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes beaconPing {
+  75%, 100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* Staggered Floating Delays */
+.float-delay-1 {
+  animation: gentleLevitate 6s ease-in-out infinite;
+  animation-delay: -2s;
+}
+.float-delay-2 {
+  animation: gentleLevitate 6.8s ease-in-out infinite;
+  animation-delay: -4s;
+}
+.float-delay-3 {
+  animation: gentleLevitate 5.4s ease-in-out infinite;
+  animation-delay: -1s;
+}
+
+/* 3D Perspective Container */
+.perspective-mockup {
+  perspective: 1200px;
+}
+.perspective-inner {
+  transform: rotateX(8deg) rotateY(-2deg) rotateZ(1deg);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease;
+}
+.perspective-inner:hover {
+  transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translateY(-6px);
+  box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.8), 0 0 50px -10px rgba(255, 255, 255, 0.08);
+}
+@media (max-width: 768px) {
+  .perspective-inner {
+    transform: none !important;
+  }
+}
+
+/* Bento Card Coordinate Marks & Specular Lighting */
+.bento-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-app);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bento-card:hover {
+  border-color: var(--border-focus);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 20px 45px -12px rgba(0, 0, 0, 0.7);
+  transform: translateY(-3px);
+}
