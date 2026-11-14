@@ -1,95 +1,135 @@
-# Chrono Matrix — The Monochrome Productivity Standard
+# Chrono Matrix ⏳
 
-A luxury, minimalist productivity journal and habit scheduler built with an obsidian monochrome palette, editorial typography, and disciplined accountability.
+> **Minimalist monochrome habit tracking & compounding discipline architecture.**  
+> Zero distractions. Zero paywalls. Mathematically compounded consistency.
 
----
-
-## ✨ Features
-
-- **Monthly Matrix Scheduler**:
-  - Horizontal calendar axis (Day 1 to $N$) with unlimited customizable rituals and tasks.
-  - Interactive status toggles, continuous streak counters, and celebratory confetti upon full daily completion.
-  - Highlights the current day with a distinct monochrome vertical marker.
-
-- **Accountability Tribunal (AI Disciplinary Warden)**:
-  - Automatically flags any task uncompleted for 2 consecutive days.
-  - Consults the **Google Gemini API** (`gemini-2.5-flash`) to generate sharp, witty, and contextual disciplinary penalties based on the specific broken habit.
-  - Built-in resilient offline engine that generates penalties even when offline without an API key.
-
-- **Sleep Analytics Engine**:
-  - Log daily bedtime, wake time, duration, and subjective quality (Deep, Restful, Fragmented, Restless).
-  - Dynamic 14-day SVG sleep duration graph with an optimal 8.0-hour benchmark threshold line.
-  - Calculates average sleep duration, quality percentage index, and logging consistency.
-
-- **Editorial Quote Banner**:
-  - Curated stoic and focus quotes rendered in *Apple Garamond* and *Blacksword* signature script.
-  - Toggle on/off or pin your own custom life mantra.
-
-- **Live Completion Meters (Top Right)**:
-  - **Today's Completion %**: Real-time ratio of tasks finished today.
-  - **Monthly Completion %**: Cumulative monthly consistency score.
-  - **Streak Counter**: Consecutive active discipline days.
-
-- **⚡ Potato Mode (Eco / Low-Spec Switch)**:
-  - High-performance toggle in the top bar that disables interactive mouse aura glow, particle effects, and heavy transitions for 60fps performance on low-spec hardware.
-
-- **Authentication & Temp-Mail Shield**:
-  - Google Sign-In and Email authentication backed by Firebase.
-  - Real-time **Temp-Mail Intelligence Shield** that blocks and warns against disposable email services (150+ known burner domains and heuristic pattern detection).
-  - Guest / Offline mode to use locally without ever creating an account.
-
-- **Offline-First & Standalone Software Hub**:
-  - All data is persisted directly inside client storage (LocalStorage / IndexedDB).
-  - Dedicated download modal with 1-click **JSON Backup Export** and **Restore**.
-  - Installable as an offline Desktop application (PWA).
+[![Live Web Application](https://img.shields.io/badge/Live_App-Chrono_Matrix-08080a?style=for-the-badge&logo=vercel&logoColor=white)](https://chrono-matrix-nine.vercel.app/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Framer Motion](https://img.shields.io/badge/Framer_Motion-black?style=for-the-badge&logo=framer&logoColor=blue)](https://www.framer.com/motion/)
 
 ---
 
-## 🎨 Typography & Design
+## 🌐 Live Deployment
+Access the production application directly:  
+👉 **[https://chrono-matrix-nine.vercel.app/](https://chrono-matrix-nine.vercel.app/)**
 
-- **Signature Script**: *Blacksword*
-- **Editorial Headings & Quotes**: *Apple Garamond* / *Garamond*
-- **Interface & Metrics**: *Helvetica*
-- **Color Scheme**: Deep obsidian black (`#070709`), subtle slate borders, and crisp high-contrast white.
-
----
-
-## 🚀 Getting Started
-
-### 1. Install Dependencies
-```bash
-npm install
-```
-
-### 2. Environment Configuration
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-Ensure your Firebase credentials and Gemini API Key are set.
-
-### 3. Run Development Server
-```bash
-npm run dev
-```
-
-### 4. Build for Production
-```bash
-npm run build
-npm run preview
-```
+Installable on desktop and mobile devices via Progressive Web App (PWA) standards with offline local persistence.
 
 ---
 
-## 📦 Pushing to GitHub
+## 🏛️ Core Architectural Pillars
 
-When you're ready to upload to GitHub:
-```bash
-git init
-git add .
-git commit -m "feat: initial commit of Chrono Matrix luxury productivity app"
-git branch -M main
-git remote add origin <your-github-repo-url>
-git push -u origin main
-```
-*(Your `.env` file is protected by `.gitignore` and will never be committed).*
+### 1. 📅 30-Day Ritual Matrix
+* **Daily Execution Grid**: 1-tap ritual completion across an obsidian-monochrome calendar axis.
+* **Streak Telemetry**: Real-time tracking of continuous daily habits and active streaks.
+* **Category Tagging**: Focus, Fitness, Code, Mind, Habit, and Custom taxonomies.
+* **Visual Density**: Optimized high-contrast cell states with specular micro-glows.
+
+### 2. 📈 The 1% Compounding Trajectory
+* **Mathematical Foundation**: Visualizes James Clear's atomic compounding theorem:
+  $$\text{Compounded Growth} = (1.01)^{365} \approx 37.78\times$$
+  $$\text{Degeneration Curve} = (0.99)^{365} \approx 0.03\times$$
+* **Dynamic Vector Curve**: Compares actual habit execution trajectory against ideal exponential acceleration and deceleration thresholds.
+
+### 3. ⚖️ Disciplinary Accountability Tribunal
+* **2-Day Breach Protocol**: Missing any commitment two days consecutively locks rituals.
+* **Contextual Penalties**: Intelligent disciplinary sanctions tailored to the breached habit category (e.g., cold showers, physical conditioning, digital detox).
+* **Sanction Service Verification**: Requires completing and marking assigned disciplinary restitutions to unlock routines.
+* **Accountability Baseline Reset**: Allows intentional fresh starts while logging accountability history.
+
+### 4. 🌙 Circadian Sleep & Recovery Engine
+* **Telemetry Logging**: Track bedtime, wake time, duration, and sleep quality (Deep, Restful, Fragmented, Restless).
+* **Midday Nap Support**: Capture power naps and micro-recovery intervals.
+* **Wearable Step Calibration**: Direct logging and calibration of daily steps, active minutes, and estimated caloric burn.
+* **Visual Benchmarking**: 14-day chronological sleep duration graph with benchmark thresholds.
+
+### 5. 🌌 Deep Space Celestial Atmosphere
+* **Realistic Astronomical Starfield**: 150+ procedural stars categorized into astronomical spectral classes (O, A, G, M) with James Webb Space Telescope 4-ray diffraction spikes.
+* **Morphing Galactic Realms**: Background shifts smoothly between distinct cosmic nebulae across tabs (Andromeda Matrix, Jade Helix, Circadian Twilight Aurora, Obsidian Quasar).
+* **Dual-Spectrum Visibility**:
+  * *Dark Space*: Deep obsidian void with luminous stellar cores.
+  * *Light Observatory*: Midnight sapphire and charcoal star coordinates readable on light backgrounds.
+* **Potato Mode**: High-efficiency toggle for low-power devices, disabling heavy physics for steady 60 FPS performance.
+
+---
+
+## ⌨️ Tactical Navigation Shortcuts
+
+| Key Binding | Function |
+| :--- | :--- |
+| `1` | Jump to **Ritual Matrix** |
+| `2` | Jump to **1% Trajectory Curve** |
+| `3` | Jump to **Circadian Sleep** |
+| `4` | Jump to **Discipline Tribunal** |
+| `→` or `j` | Advance to Next Section |
+| `←` or `k` | Return to Previous Section |
+| Mouse Wheel at Edge | Fluid Section Transition |
+| Mobile Boundary Swipe | Direction-Aware Slide |
+
+---
+
+## 🛠️ Technology Stack
+
+* **Frontend Framework**: React 19, TypeScript
+* **Build Tooling**: Vite 8
+* **Styling & Design System**: Tailwind CSS, Specular Glassmorphism
+* **Motion Physics**: Framer Motion
+* **Iconography**: Lucide React
+* **Authentication & Cloud Sync**: Firebase Auth, Cloud Firestore
+* **AI Discipline Warden**: Google Gemini API (`gemini-2.5-flash`)
+* **Storage Protocol**: Local-First IndexedDB / LocalStorage with JSON backup export
+
+---
+
+## 🚀 Local Development Setup
+
+### Prerequisites
+* **Node.js**: v18.0.0 or higher
+* **npm** or **pnpm**
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Lakshay-exec/chrono-matrix.git
+   cd chrono-matrix/matrix-productivity
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables:**
+   Create `.env` using `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+   Add your Firebase and Gemini credentials (or run in Offline Guest Mode without keys).
+
+4. **Start Development Server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Production Build & Verification:**
+   ```bash
+   npm run build
+   npm run preview
+   ```
+
+---
+
+## 🔒 Privacy & Data Sovereignty
+* **Local-First**: Data lives on your device storage by default.
+* **Zero Telemetry Leaks**: No trackers, advertisements, or third-party behavioral profiling.
+* **Air-Gapped Guest Mode**: Full tracking functionality available without creating an account.
+* **1-Click Portability**: Full JSON backup export and restore available under the Offline Hub.
+
+---
+
+## 👤 Author
+Developed by **Lakshay** ([@Lakshay-exec](https://github.com/Lakshay-exec))  
+*Built for relentless personal discipline and mathematically compounding consistency.*
