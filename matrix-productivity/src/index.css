@@ -580,3 +580,68 @@ html.light .cyber-grid {
     animation: none !important;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SCROLL-BASED DESIGN SYSTEM — LandingHeroV2 + RadialNav
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Infinite Ticker Tape */
+.ticker-wrapper {
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+.ticker-fade-left {
+  background: linear-gradient(to right, var(--bg-app) 0%, transparent 100%);
+}
+.ticker-fade-right {
+  background: linear-gradient(to left, var(--bg-app) 0%, transparent 100%);
+}
+
+/* Aurora / gradient animated section background */
+@keyframes aurora-move {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+.aurora-bg {
+  background: linear-gradient(
+    -45deg,
+    rgba(6, 78, 59, 0.25),
+    rgba(14, 116, 144, 0.18),
+    rgba(88, 28, 135, 0.18),
+    rgba(6, 78, 59, 0.25)
+  );
+  background-size: 400% 400%;
+  animation: aurora-move 18s ease infinite;
+}
+
+/* Noise grain texture overlay */
+.noise-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.022;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* Accessibility: Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .floating-levitate,
+  .beacon-pulse,
+  .ticker-track,
+  .btn-shimmer::after {
+    animation: none !important;
+  }
+}

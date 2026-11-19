@@ -15,7 +15,7 @@ import {
 } from './services/storage';
 import { auth, onAuthStateChanged, logoutUser, type User } from './services/firebase';
 
-import { LandingHero } from './components/LandingHero';
+import { LandingHeroV2 as LandingHero } from './components/LandingHeroV2';
 import { AuthGate } from './components/AuthGate';
 import { Navbar } from './components/Navbar';
 import { MouseAura } from './components/MouseAura';
