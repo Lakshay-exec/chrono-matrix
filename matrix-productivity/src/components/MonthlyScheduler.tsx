@@ -165,6 +165,13 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
     return `${SHORT_MONTHS[first.month]} ${first.dayNum} – ${SHORT_MONTHS[last.month]} ${last.dayNum}, ${last.year}`;
   })();
 
+  // Today's execution metrics for telemetry ribbon
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const totalTasks = tasks.length;
+  const completedTodayCount = tasks.filter((t) => t.history?.[todayKey] === 'done').length;
+  const todayProgressPct = totalTasks > 0 ? Math.round((completedTodayCount / totalTasks) * 100) : 0;
+  const is100PctToday = totalTasks > 0 && completedTodayCount === totalTasks;
+
   return (
     <div className="w-full space-y-3.5 page-enter">
       {/* Header Controls: Month/Week Selector, Mode Toggle, Add Ritual */}
@@ -281,6 +288,62 @@ export const MonthlyScheduler: React.FC<MonthlySchedulerProps> = ({
           </button>
         </div>
       </div>
+
+      {/* TODAY'S MOMENTUM & VELOCITY TELEMETRY RIBBON */}
+      {tasks.length > 0 && (
+        <div className="glass-card rounded-2xl p-3 sm:p-4 border border-current/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+          <div className="flex items-center gap-3">
+            <div className="relative w-9 h-9 shrink-0 flex items-center justify-center">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                <path
+                  className="text-current opacity-10"
+                  strokeWidth="3.5"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path
+                  className="text-emerald-400 transition-all duration-500 ease-out"
+                  strokeDasharray={`${todayProgressPct}, 100`}
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+              </svg>
+              <span className="absolute text-[10px] font-bold text-current font-mono">
+                {todayProgressPct}%
+              </span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-bold text-current">
+                  {completedTodayCount} of {totalTasks} Rituals Fulfilled Today
+                </span>
+                {is100PctToday && (
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
+                    100% COMPLETE
+                  </span>
+                )}
+              </div>
+              <div className="text-[10px] opacity-50 font-serif-app italic">
+                {is100PctToday
+                  ? "All daily commitments fulfilled. Mathematical compound secured."
+                  : completedTodayCount > 0
+                  ? "Execution active. Keep compounding unbroken."
+                  : "Start strong today. Zero friction, execute first ritual."}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 self-end sm:self-auto text-[11px] opacity-70">
+            <span className="hidden sm:inline-block px-2.5 py-1 rounded-xl bg-current/[0.03] border border-current/[0.08] text-[10px]">
+              Keyboard: <span className="font-bold opacity-90">1–4</span> switch tabs
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* MATRIX TABLE CONTAINER */}
       <div className="glass-card rounded-2xl overflow-hidden border border-current/[0.08]">

@@ -11,6 +11,9 @@ import {
   Moon as MoonIcon,
   Sun,
   MoreVertical,
+  Calendar,
+  TrendingUp,
+  ShieldAlert,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -38,11 +41,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleQuote,
   theme,
   onToggleTheme,
+  activeSection,
   onScrollToSection,
   user,
   onLogout,
   onOpenDownload,
   onOpenAuth,
+  activeStrikesCount,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -63,6 +68,36 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="font-signature text-[10px] sm:text-xs opacity-40 hidden sm:inline">journal</span>
           </div>
         </div>
+
+        {/* Center: Desktop Segmented Navigation Tabs (Linear / Raycast Style) */}
+        <nav className="hidden lg:flex items-center gap-1 bg-current/[0.04] p-1 rounded-2xl border border-current/[0.08] text-xs font-mono">
+          {[
+            { id: 'section-matrix', label: 'Ritual Matrix', icon: Calendar },
+            { id: 'section-curve', label: '1% Curve', icon: TrendingUp },
+            { id: 'section-sleep', label: 'Circadian Sleep', icon: MoonIcon },
+            { id: 'section-accountability', label: 'Tribunal', icon: ShieldAlert },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isAct = activeSection === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onScrollToSection(tab.id)}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-xl transition-all cursor-pointer relative ${
+                  isAct
+                    ? 'btn-solid-invert font-bold shadow-sm'
+                    : 'opacity-55 hover:opacity-100 hover:bg-current/[0.05]'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{tab.label}</span>
+                {tab.id === 'section-accountability' && activeStrikesCount > 0 && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse ml-0.5" />
+                )}
+              </button>
+            );
+          })}
+        </nav>
 
         {/* Right: Metric Capsule + Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">

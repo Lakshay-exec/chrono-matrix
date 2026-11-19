@@ -3,11 +3,9 @@ import { RadialNav } from './RadialNav';
 import {
   motion,
   useScroll,
-  useTransform,
   AnimatePresence,
   useInView,
   useSpring,
-  MotionValue,
 } from 'framer-motion';
 import {
   ArrowRight,
@@ -216,17 +214,11 @@ const LampEffect: React.FC = () => (
 );
 
 // ─── Momentum Gauge SVG ───────────────────────────────────────────────────────
-const MomentumGauge: React.FC<{ progress: MotionValue<number> }> = ({ progress }) => {
-  const [p, setP] = useState(0);
-  useEffect(() => {
-    const unsub = progress.on('change', (v: number) => setP(Math.max(0, Math.min(1, v))));
-    return unsub;
-  }, [progress]);
+const MomentumGauge: React.FC<{ percent: number }> = ({ percent }) => {
+  const p = Math.max(0, Math.min(1, percent / 100));
   const value = (1 + 36.78 * p).toFixed(2);
-  // Arc: from 220° to 320° (semi-circle, 220° sweep)
-  // Using SVG arc path
   const totalSweep = 220;
-  const startAngleDeg = 160; // bottom-left
+  const startAngleDeg = 160;
   const endAngleDeg = startAngleDeg + totalSweep * p;
   const toRad = (d: number) => (d * Math.PI) / 180;
   const cx = 100, cy = 100, r = 72;
@@ -243,13 +235,11 @@ const MomentumGauge: React.FC<{ progress: MotionValue<number> }> = ({ progress }
   const ny = cy + 56 * Math.sin(toRad(needleAngle));
 
   return (
-    <svg viewBox="0 0 200 160" className="w-44 sm:w-56" aria-label={`Momentum ${value}×`}>
-      {/* BG arc track */}
+    <svg viewBox="0 0 200 160" className="w-40 sm:w-48 mx-auto" aria-label={`Momentum ${value}×`}>
       <path
         d={arcPath(startAngleDeg, startAngleDeg + totalSweep)}
         fill="none" stroke="currentColor" strokeOpacity="0.1" strokeWidth="6" strokeLinecap="round"
       />
-      {/* Progress arc (cyan) */}
       {p > 0.01 && (
         <path
           d={arcPath(startAngleDeg, endAngleDeg)}
@@ -257,13 +247,11 @@ const MomentumGauge: React.FC<{ progress: MotionValue<number> }> = ({ progress }
           style={{ filter: 'drop-shadow(0 0 6px rgba(34,211,238,0.5))' }}
         />
       )}
-      {/* Needle */}
       <line
         x1={cx} y1={cy} x2={nx} y2={ny}
-        stroke="white" strokeWidth="1.5" strokeLinecap="round"
+        stroke="white" strokeWidth="2" strokeLinecap="round"
       />
       <circle cx={cx} cy={cy} r={5} fill="white" fillOpacity="0.9" />
-      {/* Value text */}
       <text x={cx} y={cy + 36} textAnchor="middle" fontSize="18" fontWeight="bold"
         fill="#22d3ee" fontFamily="monospace">{value}×</text>
       <text x={cx} y={cy - 82} textAnchor="middle" fontSize="7" fill="white" fillOpacity="0.3"
@@ -422,37 +410,25 @@ export const LandingHeroV2: React.FC<LandingHeroProps> = ({
     return () => obs.forEach(o => o.disconnect());
   }, [onRealmChange]);
 
-  // ── Scroll-pinned INTRO section ────────────────────────────────────────────
-  const introRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: ip } = useScroll({ target: introRef, offset: ['start start', 'end start'] });
+  // Interactive Momentum Gauge state
+  const [gaugePercent, setGaugePercent] = useState(72);
+  const gaugeValue = (1 + 36.78 * (gaugePercent / 100)).toFixed(2);
 
-  const heroTitleY   = useTransform(ip, [0, 0.6], [0, -50]);
-  const heroOpacity  = useTransform(ip, [0, 0.5, 0.75], [1, 1, 0]);
-  const mockupX      = useTransform(ip, [0.08, 0.35], [60, 0]);
-  const mockupOp     = useTransform(ip, [0.05, 0.3], [0, 1]);
-  const ctaOp        = useTransform(ip, [0.4, 0.6], [0, 1]);
-  const ctaY         = useTransform(ip, [0.4, 0.6], [24, 0]);
+  // Interactive mock rows state
+  const [heroChecks, setHeroChecks] = useState<Record<number, boolean[]>>({
+    0: [true, true, true, true, true, true, false],
+    1: [true, true, true, true, true, true, true],
+    2: [true, false, true, true, false, true, true],
+    3: [true, true, true, false, true, true, true],
+  });
 
-  // ── Scroll-pinned SYSTEM section ──────────────────────────────────────────
-  const sysRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: sp } = useScroll({ target: sysRef, offset: ['start start', 'end start'] });
-
-  const leftOp  = useTransform(sp, [0.0, 0.18], [0, 1]);
-  const leftY   = useTransform(sp, [0.0, 0.18], [40, 0]);
-  const gaugeP  = useTransform(sp, [0.1, 0.72], [0, 1]);
-  const row0op  = useTransform(sp, [0.18, 0.32], [0, 1]);
-  const row0y   = useTransform(sp, [0.18, 0.32], [20, 0]);
-  const row1op  = useTransform(sp, [0.32, 0.46], [0, 1]);
-  const row1y   = useTransform(sp, [0.32, 0.46], [20, 0]);
-  const row2op  = useTransform(sp, [0.46, 0.60], [0, 1]);
-  const row2y   = useTransform(sp, [0.46, 0.60], [20, 0]);
-  const row3op  = useTransform(sp, [0.60, 0.74], [0, 1]);
-  const row3y   = useTransform(sp, [0.60, 0.74], [20, 0]);
-  const statOp  = useTransform(sp, [0.74, 0.88], [0, 1]);
-  const statY   = useTransform(sp, [0.74, 0.88], [30, 0]);
-
-  const rowOps = [row0op, row1op, row2op, row3op];
-  const rowYs  = [row0y,  row1y,  row2y,  row3y];
+  const toggleHeroCheck = (rowIdx: number, dayIdx: number) => {
+    setHeroChecks((prev) => {
+      const row = [...(prev[rowIdx] || [false, false, false, false, false, false, false])];
+      row[dayIdx] = !row[dayIdx];
+      return { ...prev, [rowIdx]: row };
+    });
+  };
 
   const FAQS = [
     { q: 'Is Chrono Matrix truly 100% free?', a: 'Yes, permanently. No paid tiers, ads, or data tracking. All features unlocked forever.' },
@@ -491,249 +467,221 @@ export const LandingHeroV2: React.FC<LandingHeroProps> = ({
       </header>
 
       {/* ════════════════════════════════════════════════════════════════
-          SECTION 1 — SCROLL-PINNED HERO (300vh)
-          Scroll drives: title rise → mockup slide-in → CTA appear
+          SECTION 1 — HERO SECTION (Seamless, No Dead Zones)
       ════════════════════════════════════════════════════════════════ */}
-      <div ref={introRef} id="lhv2-hero" style={{ height: '300vh' }}>
-        <div className="sticky top-0 h-screen flex flex-col overflow-hidden">
-          <BeamLines />
+      <section id="lhv2-hero" className="relative min-h-[92vh] flex flex-col justify-between pt-16 sm:pt-20 pb-10 overflow-hidden">
+        <BeamLines />
 
-          {/* Ticker tape */}
-          <div className="mt-14 border-b border-current/[0.06] border-t border-current/[0.03]">
-            <InfiniteTicker />
-          </div>
-
-          {/* Main content grid */}
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_1fr] gap-0 items-center max-w-7xl mx-auto w-full px-5 sm:px-10 py-8">
-
-            {/* LEFT: Editorial headline */}
-            <motion.div
-              style={{ y: heroTitleY, opacity: heroOpacity }}
-              className="space-y-6 relative z-10"
-            >
-              <div className="space-y-1">
-                <div className="text-[9px] font-mono tracking-[0.3em] opacity-40 uppercase mb-4">
-                  THE MONOCHROME HABIT ARCHITECTURE
-                </div>
-                <h1 className="font-bold leading-[0.92] tracking-[-0.04em]">
-                  <BlurReveal
-                    text="HABIT"
-                    className="block text-[13vw] sm:text-[9vw] md:text-[7.5vw] lg:text-[6.5rem]"
-                    delay={0.1}
-                  />
-                  <BlurReveal
-                    text="ARCHI-"
-                    className="block text-[13vw] sm:text-[9vw] md:text-[7.5vw] lg:text-[6.5rem] opacity-80"
-                    delay={0.22}
-                  />
-                  <span className="block font-serif-app italic font-normal text-[9vw] sm:text-[6vw] md:text-[5vw] lg:text-[4.5rem] opacity-60 tracking-[-0.02em] mt-1">
-                    <BlurReveal text="TECTURE." delay={0.34} />
-                  </span>
-                </h1>
-              </div>
-
-              <BlurReveal
-                text="An air-gapped apparatus for mathematical compounding."
-                className="block text-sm sm:text-base font-serif-app italic opacity-55 max-w-sm leading-relaxed"
-                splitBy="word"
-                delay={0.5}
-              />
-
-              {/* Live clock */}
-              <div className="flex items-center gap-3 pt-1">
-                <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-                <LiveClock />
-                <span className="text-[10px] font-mono opacity-25 tracking-widest">LOCAL</span>
-              </div>
-            </motion.div>
-
-            {/* RIGHT: App mockup slides in */}
-            <motion.div
-              style={{ x: mockupX, opacity: mockupOp }}
-              className="hidden md:block relative"
-            >
-              <div className="glass-card rounded-2xl border border-current/15 p-5 shadow-[0_30px_80px_-15px_rgba(0,0,0,0.75)] border-beam">
-                <div className="border-beam-content p-4 rounded-xl">
-                  {/* Window chrome */}
-                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-current/10 text-xs font-mono">
-                    <div className="flex items-center gap-2 opacity-70">
-                      <div className="flex gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-full bg-rose-500/70" />
-                        <div className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
-                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
-                      </div>
-                      <span className="font-semibold tracking-wider text-[10px] uppercase ml-2">CHRONO MATRIX · PROTOCOL V2</span>
-                    </div>
-                    <span className="text-amber-400 font-bold flex items-center gap-1 text-[10px]">
-                      <Flame className="w-3 h-3 fill-amber-400" /> 14d Streak
-                    </span>
-                  </div>
-                  {/* Ritual rows */}
-                  <div className="space-y-2">
-                    {MOCK_ROWS.slice(0, 2).map((row, ri) => (
-                      <div key={ri} className="flex items-center justify-between p-2.5 rounded-xl bg-current/[0.03] border border-current/[0.07]">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${row.dot}`} />
-                          <div>
-                            <div className="font-mono font-semibold text-[11px] truncate">{row.name}</div>
-                            <div className="text-[9px] opacity-40">{row.cls}</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          {row.checks.map((c, i) => (
-                            <div key={i} className={`w-6 h-6 rounded-md flex items-center justify-center ${
-                              c ? 'bg-white text-black shadow-sm shadow-white/10' : 'border border-current/15'
-                            }`}>
-                              {c ? <Check className="w-3 h-3 stroke-[3]" /> : null}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Telemetry footer */}
-                  <div className="mt-3 pt-2.5 border-t border-current/10 flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 font-bold">
-                    <Activity className="w-3 h-3" /> 1.01^365 = 37.8× Momentum
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* CTA row — appears at 40% scroll through section */}
-          <motion.div
-            style={{ opacity: ctaOp, y: ctaY }}
-            className="max-w-7xl mx-auto w-full px-5 sm:px-10 pb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4"
-          >
-            <button
-              onClick={onGetStarted}
-              className="group px-8 py-4 rounded-full btn-solid-invert font-semibold text-sm tracking-wide flex items-center gap-2.5 btn-press btn-shimmer cursor-pointer shadow-2xl"
-            >
-              <span>Initialize Tracker</span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-            </button>
-            <button
-              onClick={onExploreOffline}
-              className="text-xs font-mono opacity-45 hover:opacity-80 transition-opacity flex items-center gap-2 cursor-pointer underline underline-offset-4 decoration-current/25"
-            >
-              <HardDrive className="w-3.5 h-3.5" /> No sign-up → Guest Mode
-            </button>
-          </motion.div>
-
-          {/* Scroll hint */}
-          <motion.div
-            style={{ opacity: useTransform(ip, [0, 0.12, 0.25], [1, 1, 0]) }}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-          >
-            <span className="text-[9px] font-mono tracking-[0.25em] opacity-30 uppercase">Scroll</span>
-            <div className="w-px h-10 bg-gradient-to-b from-current/0 via-current/40 to-current/0 scroll-line" />
-          </motion.div>
+        {/* Ticker tape */}
+        <div className="mt-2 border-b border-current/[0.06] border-t border-current/[0.03]">
+          <InfiniteTicker />
         </div>
-      </div>
 
-      {/* ════════════════════════════════════════════════════════════════
-          SECTION 2 — SCROLL-PINNED SYSTEM (280vh)
-          Left: momentum gauge builds. Right: app rows appear one-by-one.
-      ════════════════════════════════════════════════════════════════ */}
-      <div ref={sysRef} style={{ height: '280vh' }}>
-        <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
-          <BeamLines />
+        {/* Main content grid */}
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 items-center max-w-7xl mx-auto w-full px-5 sm:px-10 py-8 sm:py-12">
 
-          <div className="max-w-7xl mx-auto w-full px-5 sm:px-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-
-            {/* LEFT: Gauge + copy */}
-            <motion.div style={{ opacity: leftOp, y: leftY }} className="space-y-6">
-              <div>
-                <div className="text-[9px] font-mono tracking-[0.3em] opacity-35 uppercase mb-4">THE COMPOUNDING ENGINE</div>
-                <h2 className="text-4xl sm:text-5xl font-bold tracking-[-0.03em] leading-[1]">
-                  <BlurReveal text="Designed for" splitBy="word" className="block opacity-60 font-serif-app italic font-normal text-3xl sm:text-4xl" delay={0} />
-                  <BlurReveal text="unyielding" splitBy="word" className="block" delay={0.1} />
-                  <BlurReveal text="consistency." splitBy="word" className="block opacity-80" delay={0.2} />
-                </h2>
+          {/* LEFT: Editorial headline */}
+          <div className="space-y-6 relative z-10">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-current/15 text-[9px] font-mono tracking-[0.25em] opacity-60 uppercase mb-3">
+                <Sparkles className="w-3 h-3 text-emerald-400" />
+                <span>THE MONOCHROME HABIT ARCHITECTURE</span>
               </div>
-              <p className="text-sm opacity-55 font-serif-app italic leading-relaxed max-w-xs">
-                Every single checkmark compounds. The gauge to the right tracks your mathematical momentum as you read.
-              </p>
-              {/* Gauge */}
-              <div className="flex items-center gap-6">
-                <MomentumGauge progress={gaugeP} />
-                <div className="font-mono text-xs space-y-2 opacity-60">
-                  <div>1.00× <span className="opacity-40">Day 1</span></div>
-                  <div className="text-emerald-400 font-bold">37.78× <span className="opacity-60">Day 365</span></div>
-                  <div className="text-[10px] opacity-40 leading-relaxed">Scroll down to<br />see compounding live</div>
-                </div>
-              </div>
-            </motion.div>
+              <h1 className="font-bold leading-[0.92] tracking-[-0.04em]">
+                <BlurReveal
+                  text="HABIT"
+                  className="block text-[13vw] sm:text-[9vw] md:text-[6.5vw] lg:text-[5.5rem]"
+                  delay={0.1}
+                />
+                <BlurReveal
+                  text="ARCHI-"
+                  className="block text-[13vw] sm:text-[9vw] md:text-[6.5vw] lg:text-[5.5rem] opacity-80"
+                  delay={0.22}
+                />
+                <span className="block font-serif-app italic font-normal text-[9vw] sm:text-[6vw] md:text-[4.5vw] lg:text-[4.2rem] opacity-60 tracking-[-0.02em] mt-1">
+                  <BlurReveal text="TECTURE." delay={0.34} />
+                </span>
+              </h1>
+            </div>
 
-            {/* RIGHT: App builds row by row */}
-            <div className="space-y-3">
-              <div className="text-[9px] font-mono tracking-[0.3em] opacity-30 uppercase mb-4">YOUR RITUAL MATRIX — BUILDING NOW</div>
+            <BlurReveal
+              text="An air-gapped apparatus for mathematical compounding. Zero gamified distractions, zero cloud latency."
+              className="block text-sm sm:text-base font-serif-app italic opacity-60 max-w-md leading-relaxed"
+              splitBy="word"
+              delay={0.5}
+            />
 
-              {/* Window chrome */}
-              <div className="glass-card rounded-2xl border border-current/15 p-4 sm:p-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]">
-                <div className="flex items-center gap-1.5 pb-3 mb-3 border-b border-current/10">
-                  <div className="w-2 h-2 rounded-full bg-rose-500/70" />
-                  <div className="w-2 h-2 rounded-full bg-amber-500/70" />
-                  <div className="w-2 h-2 rounded-full bg-emerald-500/70" />
-                  <span className="ml-2 text-[10px] font-mono opacity-40 tracking-wider">RITUAL MATRIX — WEEK VIEW</span>
-                  <span className="ml-auto text-[10px] font-mono text-amber-400 font-bold flex items-center gap-1">
-                    <Flame className="w-3 h-3 fill-amber-400" /> 14d
+            {/* Live clock + Status */}
+            <div className="flex items-center gap-3 pt-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 beacon-pulse" />
+              <LiveClock />
+              <span className="text-[10px] font-mono opacity-30 tracking-widest">SYSTEM OPERATIONAL</span>
+            </div>
+
+            {/* CTA row */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-3">
+              <button
+                onClick={onGetStarted}
+                className="group w-full sm:w-auto px-8 py-4 rounded-full btn-solid-invert font-semibold text-sm tracking-wide flex items-center justify-center gap-2.5 btn-press btn-shimmer cursor-pointer shadow-2xl"
+              >
+                <span>Initialize Tracker</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              </button>
+              <button
+                onClick={onExploreOffline}
+                className="text-xs font-mono opacity-50 hover:opacity-85 transition-opacity flex items-center gap-2 cursor-pointer underline underline-offset-4 decoration-current/25"
+              >
+                <HardDrive className="w-3.5 h-3.5" /> No sign-up → Guest Mode
+              </button>
+            </div>
+          </div>
+
+          {/* RIGHT: Interactive Specimen Preview */}
+          <div className="relative">
+            <div className="glass-card rounded-2xl border border-current/15 p-4 sm:p-5 shadow-[0_30px_80px_-15px_rgba(0,0,0,0.75)] border-beam">
+              <div className="border-beam-content p-4 rounded-xl">
+                {/* Window chrome */}
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-current/10 text-xs font-mono">
+                  <div className="flex items-center gap-2 opacity-70">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-rose-500/70" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
+                    </div>
+                    <span className="font-semibold tracking-wider text-[10px] uppercase ml-2">CHRONO MATRIX · PROTOCOL V2</span>
+                  </div>
+                  <span className="text-amber-400 font-bold flex items-center gap-1 text-[10px]">
+                    <Flame className="w-3 h-3 fill-amber-400" /> 14d Active Streak
                   </span>
                 </div>
-
-                {/* Column headers */}
-                <div className="flex items-center justify-between mb-2 font-mono text-[9px] opacity-30 pl-2">
-                  <span className="flex-1">RITUAL</span>
-                  <div className="flex gap-1">
-                    {['M','T','W','T','F','S','S'].map(d => (
-                      <div key={d} className="w-6 text-center">{d}</div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Rows that appear on scroll */}
+                {/* Ritual rows */}
                 <div className="space-y-2">
                   {MOCK_ROWS.map((row, ri) => (
-                    <motion.div
-                      key={ri}
-                      style={{ opacity: rowOps[ri], y: rowYs[ri] }}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-current/[0.03] border border-current/[0.07] hover:border-current/15 transition-colors"
-                    >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div key={ri} className="flex items-center justify-between p-2.5 rounded-xl bg-current/[0.03] border border-current/[0.07] hover:border-current/20 transition-all">
+                      <div className="flex items-center gap-2 min-w-0">
                         <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${row.dot}`} />
-                        <div className="min-w-0">
+                        <div>
                           <div className="font-mono font-semibold text-[11px] truncate">{row.name}</div>
-                          <div className="text-[9px] opacity-35 font-mono">{row.cls}</div>
+                          <div className="text-[9px] opacity-40 font-mono">{row.cls}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
-                        {row.checks.map((c, i) => (
-                          <div key={i} className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${
-                            c ? 'bg-white text-black shadow-sm shadow-white/15' : 'border border-current/12 text-current/25'
-                          }`}>
-                            {c ? <Check className="w-3 h-3 stroke-[3]" /> : <span className="text-[8px]">·</span>}
-                          </div>
+                        {(heroChecks[ri] || row.checks).map((c, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => toggleHeroCheck(ri, i)}
+                            title={`Toggle Day ${i + 1}`}
+                            className={`w-6 h-6 rounded-md flex items-center justify-center transition-all cursor-pointer ${
+                              c ? 'bg-white text-black font-bold shadow-sm shadow-white/10 scale-105' : 'border border-current/15 text-current/30 hover:border-current/40'
+                            }`}
+                          >
+                            {c ? <Check className="w-3 h-3 stroke-[3]" /> : <span className="text-[9px]">·</span>}
+                          </button>
                         ))}
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-
-                {/* Stats row */}
-                <motion.div
-                  style={{ opacity: statOp, y: statY }}
-                  className="mt-3 pt-3 border-t border-current/10 flex items-center justify-between font-mono text-[11px]"
-                >
+                {/* Telemetry footer */}
+                <div className="mt-3 pt-2.5 border-t border-current/10 flex items-center justify-between text-[10px] font-mono">
                   <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5" /> Momentum: 1.01^365 = 37.8×
+                    <Activity className="w-3 h-3" /> Momentum: 1.01^365 = 37.8×
                   </span>
-                  <span className="opacity-30 text-[10px]">100% local</span>
-                </motion.div>
+                  <span className="opacity-40">100% Zero-Cloud Storage</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Scroll indicator */}
+        <div className="flex flex-col items-center gap-1.5 opacity-40 pt-2 pb-1">
+          <span className="text-[9px] font-mono tracking-[0.25em] uppercase">Explore Architecture</span>
+          <div className="w-px h-6 bg-gradient-to-b from-current via-current/40 to-transparent scroll-line" />
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════════
+          SECTION 2 — THE COMPOUNDING ENGINE (Fluid, Continuous Flow)
+      ════════════════════════════════════════════════════════════════ */}
+      <section className="py-20 sm:py-28 px-5 sm:px-10 border-t border-current/[0.07] relative overflow-hidden">
+        <BeamLines />
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+
+          {/* LEFT: Gauge + copy */}
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="text-[9px] font-mono tracking-[0.3em] opacity-40 uppercase">THE COMPOUNDING ENGINE</div>
+              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight leading-[1.05]">
+                <BlurReveal text="Designed for" splitBy="word" className="block opacity-60 font-serif-app italic font-normal text-2xl sm:text-4xl" />
+                <BlurReveal text="unyielding consistency." splitBy="word" className="block" delay={0.15} />
+              </h2>
+            </div>
+            <p className="text-sm opacity-60 font-serif-app italic leading-relaxed max-w-sm">
+              Rooted in atomic habit compounding: (1.01)³⁶⁵ = 37.78× vs (0.99)³⁶⁵ = 0.03×. Every checkmark accelerates momentum; missed commitments trigger disciplinary sanctions.
+            </p>
+
+            {/* Interactive Momentum Gauge with Slider */}
+            <div className="p-5 rounded-2xl glass-card border border-current/10 space-y-4 max-w-md">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="opacity-60">Calculated Compound:</span>
+                <span className="text-emerald-400 font-bold text-sm">{gaugeValue}× Annual Gain</span>
+              </div>
+              <MomentumGauge percent={gaugePercent} />
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={gaugePercent}
+                  onChange={(e) => setGaugePercent(Number(e.target.value))}
+                  className="w-full accent-cyan-400 cursor-pointer"
+                />
+                <span className="font-mono text-xs font-bold w-12 text-right">{gaugePercent}%</span>
+              </div>
+              <div className="flex items-center justify-between text-[10px] font-mono opacity-40">
+                <span>Day 1 (1.00×)</span>
+                <span>Day 180 (6.00×)</span>
+                <span>Day 365 (37.78×)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: Vector Momentum Telemetry Curve */}
+          <div className="space-y-4">
+            <div className="text-[9px] font-mono tracking-[0.3em] opacity-40 uppercase">VECTOR MOMENTUM TELEMETRY</div>
+            <div className="relative h-64 sm:h-72 w-full rounded-2xl glass-card border border-current/15 p-5 overflow-hidden font-mono text-xs">
+              <div className="flex items-center justify-between text-[11px] opacity-60 z-10 relative">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Compounding Orbit
+                </span>
+                <span className="text-emerald-400 font-bold">+3,678% Net Differential</span>
+              </div>
+              {/* Dynamic Exponential SVG Curve */}
+              <svg className="absolute inset-0 w-full h-full p-4 overflow-visible" preserveAspectRatio="none" viewBox="0 0 300 120">
+                <defs>
+                  <linearGradient id="cgHero" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+                <path d="M 10 105 Q 120 100, 200 55 T 290 15 L 290 115 L 10 115 Z" fill="url(#cgHero)" />
+                <path d="M 10 105 Q 120 100, 200 55 T 290 15" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" />
+                <circle cx="290" cy="15" r="5" fill="#10b981" className="animate-ping opacity-75" />
+                <circle cx="290" cy="15" r="3.5" fill="#ffffff" />
+              </svg>
+              <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between text-[11px] z-10 pt-4 border-t border-current/10">
+                <span className="text-emerald-400 font-bold flex items-center gap-1">
+                  <TrendingUp className="w-4 h-4" /> Relentless Daily Elevation
+                </span>
+                <span className="opacity-50">Zero Friction Local Storage</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ════════════════════════════════════════════════════════════════
           SECTION 3 — 4 PILLARS STICKY STACKING DECK
