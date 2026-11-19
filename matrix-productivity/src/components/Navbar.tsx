@@ -57,7 +57,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <div className="w-2 h-2 rounded-full bg-current opacity-90" />
           <div className="flex items-baseline gap-1">
-            <span className="font-sans-app font-bold tracking-tight text-xs sm:text-base text-current">
+            <span className="font-sans-app font-bold tracking-[0.12em] text-xs sm:text-sm text-current uppercase">
               CHRONO<span className="hidden xs:inline"> MATRIX</span>
             </span>
             <span className="font-signature text-[10px] sm:text-xs opacity-40 hidden sm:inline">journal</span>
@@ -68,7 +68,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           
           {/* Responsive Metric Capsule */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 px-2 sm:px-2.5 py-1 rounded-xl glass-card text-[11px] sm:text-xs font-mono">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 px-2 sm:px-2.5 py-1 rounded-xl glass-card glass-card-hover text-[11px] sm:text-xs font-mono cursor-default">
             <div className="flex items-center gap-1">
               <span className="opacity-40 text-[9px] uppercase hidden sm:inline">Today</span>
               <span className="font-bold text-current">{stats.dailyPercentage}%</span>

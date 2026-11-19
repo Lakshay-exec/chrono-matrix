@@ -339,10 +339,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       <section
         id="landing-hero-section"
         ref={heroContainerRef}
-        className="relative pt-24 sm:pt-32 pb-16 px-4 sm:px-8 min-h-[140vh] sm:min-h-[160vh]"
+        className="relative pt-24 sm:pt-32 pb-16 px-4 sm:px-8 min-h-[140vh] sm:min-h-[160vh] noise-texture"
       >
         {/* Pinned Sticky Content */}
-        <div className="sticky top-20 sm:top-28 flex flex-col items-center justify-center max-w-5xl mx-auto text-center">
+        <div className="sticky top-20 sm:top-28 flex flex-col items-start justify-center max-w-5xl mx-auto text-center sm:text-left">
           
           {/* Animated Hero Narrative */}
           <motion.div
@@ -351,14 +351,14 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               opacity: heroTitleOpacity,
               y: heroTitleY,
             }}
-            className="space-y-5 max-w-3xl mx-auto px-2"
+            className="space-y-6 max-w-3xl mx-auto sm:mx-0 px-2"
           >
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-card text-[11px] font-mono tracking-widest uppercase opacity-80">
               <Sparkles className="w-3 h-3 text-emerald-400" />
               <span>THE MONOCHROME HABIT ARCHITECTURE</span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.05]">
+            <h1 className="text-5xl sm:text-7xl md:text-[7.5rem] font-bold tracking-[-0.04em] leading-[0.95]">
               One percent better,
               <br />
               <span className="font-serif-app italic font-normal opacity-90">
@@ -366,26 +366,26 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               </span>
             </h1>
 
-            <p className="max-w-xl mx-auto text-sm sm:text-base font-serif-app italic opacity-65 leading-relaxed">
+            <p className="max-w-lg mx-auto sm:mx-0 text-sm sm:text-[1.05rem] font-serif-app italic opacity-60 leading-relaxed">
               An air-gapped productivity apparatus engineered for relentless execution.
               Zero gamified distractions, zero cloud latency, mathematically compounded consistency.
             </p>
 
-            {/* Hero Action Trigger */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3 max-w-sm sm:max-w-none mx-auto">
+            {/* Hero Action — Single Primary CTA */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start justify-center sm:justify-start gap-4 pt-4 max-w-sm sm:max-w-none mx-auto sm:mx-0">
               <button
                 onClick={onGetStarted}
-                className="w-full sm:w-auto px-7 py-3.5 rounded-full btn-solid-invert font-semibold text-xs sm:text-sm tracking-wide transition-all shadow-2xl flex items-center justify-center gap-2.5 btn-press cursor-pointer"
+                className="group w-full sm:w-auto px-8 py-4 rounded-full btn-solid-invert font-semibold text-sm tracking-wide transition-all shadow-2xl flex items-center justify-center gap-2.5 btn-press cursor-pointer"
               >
                 <span>Initialize Tracker</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </button>
               <button
                 onClick={onExploreOffline}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full glass-card hover:bg-current/[0.05] transition-all text-xs font-mono tracking-wider uppercase opacity-80 hover:opacity-100 flex items-center justify-center gap-2 btn-press cursor-pointer"
+                className="text-xs font-mono opacity-50 hover:opacity-80 transition-all flex items-center gap-2 cursor-pointer underline underline-offset-4 decoration-current/20 hover:decoration-current/60"
               >
                 <HardDrive className="w-3.5 h-3.5" />
-                <span>1-Tap Offline Guest Mode</span>
+                <span>No account needed → Guest Mode</span>
               </button>
             </div>
           </motion.div>
@@ -493,7 +493,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           (Silky, high-end scroll animation that stacks natively on mobile)
       ───────────────────────────────────────────────────────────── */}
       <section className="relative px-4 sm:px-8 py-20 max-w-5xl mx-auto">
-        <div className="text-center space-y-3 mb-14">
+        <div className="text-left space-y-3 mb-14">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-current/15 text-[10px] font-mono tracking-widest uppercase opacity-70">
             <Layers className="w-3 h-3 text-cyan-400" />
             <span>ARCHITECTURAL SYSTEMS</span>
@@ -501,7 +501,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">
             Designed for unyielding consistency.
           </h2>
-          <p className="max-w-xl mx-auto text-sm opacity-60 font-serif-app italic">
+          <p className="max-w-xl text-sm opacity-60 font-serif-app italic">
             Scroll through the four foundational pillars that separate Chrono Matrix from conventional habit trackers.
           </p>
         </div>
@@ -558,20 +558,20 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       <section className="px-4 sm:px-8 py-20 border-t border-current/10">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center font-mono">
-            <div className="p-5 rounded-2xl glass-card border border-current/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-bold text-emerald-400 tracking-tight">37.78×</div>
+            <div className="p-6 sm:p-8 rounded-2xl glass-card border border-current/10 space-y-1">
+              <div className="text-4xl sm:text-5xl font-bold text-emerald-400 tracking-tight tabular-nums">37.78×</div>
               <div className="text-[10px] uppercase opacity-50 tracking-wider">Annual 1% Growth</div>
             </div>
-            <div className="p-5 rounded-2xl glass-card border border-current/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-bold text-current tracking-tight">0 ms</div>
+            <div className="p-6 sm:p-8 rounded-2xl glass-card border border-current/10 space-y-1">
+              <div className="text-4xl sm:text-5xl font-bold text-current tracking-tight tabular-nums">0 ms</div>
               <div className="text-[10px] uppercase opacity-50 tracking-wider">Offline Latency</div>
             </div>
-            <div className="p-5 rounded-2xl glass-card border border-current/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-bold text-cyan-400 tracking-tight">100%</div>
+            <div className="p-6 sm:p-8 rounded-2xl glass-card border border-current/10 space-y-1">
+              <div className="text-4xl sm:text-5xl font-bold text-cyan-400 tracking-tight tabular-nums">100%</div>
               <div className="text-[10px] uppercase opacity-50 tracking-wider">Free Forever</div>
             </div>
-            <div className="p-5 rounded-2xl glass-card border border-current/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-bold text-purple-400 tracking-tight">Zero</div>
+            <div className="p-6 sm:p-8 rounded-2xl glass-card border border-current/10 space-y-1">
+              <div className="text-4xl sm:text-5xl font-bold text-purple-400 tracking-tight tabular-nums">Zero</div>
               <div className="text-[10px] uppercase opacity-50 tracking-wider">Cloud Dependencies</div>
             </div>
           </div>
@@ -731,9 +731,11 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       {/* Footer */}
       <footer className="px-4 sm:px-8 py-6 border-t border-current/10 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono opacity-50 gap-2">
         <div className="flex items-center gap-2">
-          <span>CHRONO MATRIX · MINIMALIST PRODUCTIVITY</span>
-          <span>·</span>
-          <span>STUDENT BUILT</span>
+          <span>CHRONO MATRIX</span>
+          <span className="opacity-30">·</span>
+          <span>Built by Lakshay</span>
+          <span className="opacity-30">·</span>
+          <span>2024</span>
         </div>
         <div className="flex items-center gap-4">
           <button
